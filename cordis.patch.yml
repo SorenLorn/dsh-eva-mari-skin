@@ -1,0 +1,12 @@
+# dsh-mari-skin — 插件市场要求的激活清单（不是调试开关）
+#
+# 插件市场与 `dsh plugin add` 的判定依据就是这个文件：
+# package.json 的 dsh.bundle.patch 指向它，安装后由 dsh 把这一行插入 profile 层。
+# 没有它，包装上了也不会被加载（dsh 会警告 "declares no dsh.bundle"，
+# 市场侧则直接拒收 not-a-bundle）。
+#
+# 只有一行：把包本身挂进插件树。皮肤的可调参数都在 skin.css 的
+# html[data-dsh-skin="mari"] 变量块里，这里不需要任何 config。
+- insert:
+    - id: mari-skin
+      name: dsh-mari-skin

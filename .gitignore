@@ -1,0 +1,18 @@
+# 依赖（本插件零依赖，正常不会产生）
+node_modules/
+package-lock.json
+
+# 本机调试脚本：读取本地安装的 app.asar，不属于发布内容
+.tmp-*
+*.log
+
+# 本机静态预览（复刻 DSH 插件详情页结构，用于截图核对皮肤效果）
+.preview/
+
+# WorkBuddy 本地工作目录
+.workbuddy/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
