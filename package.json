@@ -21,11 +21,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stxn/dsh-mari-skin.git"
+    "url": "git+https://github.com/SorenLorn/dsh-eva-mari-skin.git"
   },
-  "homepage": "https://github.com/stxn/dsh-mari-skin#readme",
+  "homepage": "https://github.com/SorenLorn/dsh-eva-mari-skin#readme",
   "bugs": {
-    "url": "https://github.com/stxn/dsh-mari-skin/issues"
+    "url": "https://github.com/SorenLorn/dsh-eva-mari-skin/issues"
   },
   "engines": {
     "node": ">=20"
