@@ -1,6 +1,6 @@
 {
   "name": "dsh-mari-skin",
-  "version": "1.1.0",
+  "version": "1.2.2",
   "description": "真希波 EVA 装甲 HUD 皮肤：整体视觉由 CSS 变量与伪元素实现，开机时临时在 <html> 挂载不参与 DSH React 树的视频组件，播放结束立即移除。",
   "type": "module",
   "main": "./lib/index.js",

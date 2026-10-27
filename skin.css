@@ -832,28 +832,22 @@ html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] {
 }
 
 /* ── 5.5.2 折叠态：toggle 独立可见（0 宽 / 56px rail 通用）─────────────────
-   ★ 只钉死按钮自己的可见性与配色，**不覆盖 position / left / top /
+   ★ 只钉死按钮自己的可见性与可点击性，**不覆盖 position / left / top /
      width / height**：位置全交给官方，展开态与折叠态之间不会有跳动，
      也不会把按钮从 56px rail 里拽出去。
    ★ visibility: visible 是这里的关键：它把 5.5.3 的列级隐藏覆盖回来，
-     而这一步只有 visibility 做得到（opacity 做不到）。 */
+     而这一步只有 visibility 做得到（opacity 做不到）。
+   ★ 【★2026-10 第五轮 · 需求 2】这里原本还画了一层「淡白玻璃底 + 玫色描边 +
+     粉色投影」，属于自创外观；本轮按要求还原成官方原样（eva-theme 对这颗
+     按钮一条规则都没写），所以背景 / 边框 / 阴影 / 过渡**全部撤掉**，
+     只留可见性与可点击性。外观回到官方：28×28、radius-sm、label-secondary、
+     hover 走 --dsw-alias-interactive-bg-hover。见 §22 的对照表。 */
 html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="toggle"],
 html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="iconButton"] {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
-
-  /* 皮肤风格重绘：淡白玻璃 + 细粉描边，尺寸沿用官方（28px / 36px） */
-  background-color: rgba(255, 250, 253, 0.86) !important;
-  background-image: none !important;
-  border: 1px solid rgba(255, 92, 147, 0.42) !important;
-  box-shadow:
-    0 4px 14px -6px rgba(255, 60, 120, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
   cursor: pointer;
-  transition: background-color 160ms var(--mari-ease),
-              border-color 160ms var(--mari-ease),
-              box-shadow 160ms var(--mari-ease);
 }
 
 /* ── 5.5.3 0 宽折叠（Windows 标题栏 / macOS）：把左列彻底熄灯 ──────────────
@@ -914,12 +908,12 @@ html[data-platform="darwin"][data-dsh-skin="mari"] [data-sidebar-collapsed] [cla
   z-index: 30;
 }
 
-/* ── 5.5.6 折叠态：品牌小图标（railMark）让位给 toggle ────────────────────
-   官方在折叠态把 railMark 和 toggle 叠在同一格，两个图标会互相遮挡。
-   只保留能点的 toggle，railMark 隐去。 */
-html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="railMark"] {
-  display: none !important;
-}
+/* ── 5.5.6 【★2026-10 第五轮 · 需求 2】原规则「折叠态隐藏 railMark」已撤 ────
+   官方在折叠态是一套**图标切换**：静止显示 railMark（品牌小图标），
+   hover 时 `._collapsed ._toggle ._panelIcon{display:inline}` 换成面板图标。
+   我们之前把 railMark 藏掉、又强制点亮 panelIcon，等于把这套切换整个抹平，
+   图标也就跟官方/eva 长得不一样了。本轮按需求还原，规则整条删除。
+   官方那两条切换规则原封不动生效，不需要我们补任何东西。 */
 
 /* ── 5.5.7 折叠态：拖拽把手隐形 ──────────────────────────────────────────
    handle 是 frame 的直属子级（不在 sidebarCol 内，不是 toggle 的祖先），
@@ -930,43 +924,29 @@ html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="handle"] {
   pointer-events: none;
 }
 
-/* ── 5.5.8 折叠态图标：官方默认 `._collapsed ._toggle ._panelIcon{display:none}`，
-   只在 hover 时才显示 —— 不悬停就看不到图标，等于按钮「看着是空的」。 */
-html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="panelIcon"],
-html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="toggle"] svg {
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: var(--mari-neon) !important;
-  fill: currentColor;
-  width: 16px !important;
-  height: 16px !important;
-  pointer-events: none;
-}
+/* ── 5.5.8 【★2026-10 第五轮 · 需求 2】原规则已整条撤掉 ──────────────────────
+   原规则做的是：折叠态强制 `panelIcon` 与所有 svg 显示、染成 --mari-neon、
+   钉死 16×16。它解决的其实是「折叠态不 hover 就看不到图标」这个观感问题，
+   但官方本来就是这么设计的 —— 官方 SidebarRoot.module.css 里写着：
+       ._collapsed ._toggle ._panelIcon { display: none }
+       ._collapsed ._toggle:hover ._panelIcon { display: inline }
+       ._collapsed ._toggle:hover ._railMark  { display: none }
+   静止显示品牌小图标（railMark），hover 才切成面板图标。这是图标切换，不是 BUG。
+   撤掉以后：尺寸交回官方 svg 的 14×14，颜色交回
+   --dsw-alias-label-secondary / label-primary（折叠态官方取 primary），
+   深色主题同样跟随官方令牌。原「hover 描边提亮」与「深色换皮」两条一并删除。 */
 
-/* hover / focus：描边提亮，明确「这里可以点」 */
+/* ── 5.5.8b 【保留】hover / focus 期不要滤镜 ────────────────────────────────
+   这条与外观无关，是 §19.5 那套「hover 抖动」治理的一部分：
+   §7 给所有 button:hover 加了 brightness，而折叠按钮压在侧栏渐变上，
+   两层合成层在同一帧重建会让光标在边界上来回闪。只关滤镜，不碰任何颜色。
+   ★ 只写 filter，不写 background / border / color —— 这三样归官方。
+   ★ 即使官方改版把类名换掉，这条失效也只是回到官方那个干净的 hover。 */
 html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="toggle"]:hover,
 html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="iconButton"]:hover,
 html[data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="toggle"]:focus-visible {
-  border-color: var(--mari-neon) !important;
-  box-shadow:
-    0 0 0 1px rgba(255, 92, 147, 0.40),
-    0 6px 18px -6px rgba(255, 60, 120, 0.85),
-    inset 0 0 10px rgba(255, 60, 120, 0.14) !important;
-}
-
-/* 深色主题：深粉黑玻璃，避免夜里一块刺眼白 */
-html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="toggle"],
-html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="iconButton"] {
-  background-color: rgba(30, 11, 21, 0.90) !important;
-  border-color: rgba(255, 146, 180, 0.52) !important;
-  box-shadow:
-    0 4px 14px -6px rgba(0, 0, 0, 0.60),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.10) !important;
-}
-
-html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-sidebar-collapsed] [class*="sidebarCol"] [class*="panelIcon"] {
-  color: var(--mari-neon-soft) !important;
+  filter: none !important;
+  -webkit-filter: none !important;
 }
 
 /* ── 5.5.9 【★2026-10 修复】顶部栏「收起侧边栏」按钮：钉回标题条 ────────────
@@ -2997,4 +2977,2180 @@ html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-plugin-entry] svg {
   html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-plugin-entry] {
     background: rgba(42, 17, 30, 0.94);
   }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §18  【2026-10 · 第八轮】UNIT-08 / 真希波：颜色 · 输入框 · HUD · 玻璃 · 扫描
+   ═══════════════════════════════════════════════════════════════════════════════
+   本节是**纯增量**：只有在「同一元素被后写规则覆盖」的地方才生效，
+   不改写、不删除、不搬动上面任何一段既有代码。
+
+   ── 不动的东西（硬约束）────────────────────────────────────────────────────
+     · §8 开机视频：3.mp4 的层级、FADE_MS、handoff、时序 —— 一个字节都不碰；
+     · §2 背景图与 body 底色、§3 的 background-image（扫描线 / 网格 / 噪点
+       四层图像定义原样保留，只换 --mari-grid 周期与 animation 引用）；
+     · §5.5 / §10~§14 侧边栏折叠、遮罩残留、右栏折叠的全部修复；
+     · §8.6 右上角窗口按钮（native 半透 + web 玻璃条）的整套方案；
+     · §6.6 / §17 插件详情与插件面板的玻璃**机制**（只调参数，不换做法）。
+
+   ── 新增的伪元素槽位（全部先确认官方未占用）────────────────────────────────
+     html::after                     → HUD 仪表板（§8.6 只占了 html::before）
+     [data-composer-card]::before    → 复用 §6.1，重排为 UNIT-08 字标
+     [data-composer-card]::after     → 空槽，放编号字「08」
+     仍然是「零新增 DOM 节点」：伪元素不是节点，不参与官方树、不影响点击
+     （全部 pointer-events:none）。
+
+   ── 与参考皮肤（eva-theme 绫波丽版）的区分点 ───────────────────────────────
+     参考版：圆角 0（硬直角） / 1px 橙描边 / 右缘红黑警示条 / 8px+40px 双档边尺 /
+             9s 匀速扫描带 / 60 分格秒轨 / SVG 折线波形。
+     本节：22px→9px 的「控制台舱盖」非对称圆角 / 1.5px 玫粉 + 2.5px 淡紫双圈 /
+             左上竖条字标 + 右上编号字 / 60-20-5px 三档度盘刻度 /
+             13s 往返漂移的整层扫描 / 30 分格秒轨 + 5px 步进游标 /
+             96px 周期的内联 SVG 声纹。
+     灵感同源（仪表 + 刻度 + 波形三段式），但每一个几何量都换过。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── 18.0 增量令牌：低饱和玫粉主光 + 淡紫辅光 ──────────────────────────────
+   为什么另起 --u8-* 而不是改 §1 的 --mari-neon：
+     §1 的霓虹粉 #FF5C93 是全站强调色的锚点（按钮、选中态、描边都用它）。
+     本节要的是「弱一档的发光」，把它改掉会连带把按钮一起洗淡；
+     所以新增一组只给增量装饰用的色调，两个体系互不干扰。
+   低饱和的判断标准：HSL 饱和度从 100% 降到 ~58%，色相从 342° 微移到 337°
+   （略偏紫），这样在粉色插画上不会「跳出来」，也不会靠近参考皮肤的冷蓝。
+   ★ 深色档必须写在 html:has(body[...]) 上：HUD 挂在 html::after 上，
+     变量若写在内层 body 上，伪元素继承不到（这是最容易踩的坑）。 */
+html[data-dsh-skin="mari"] {
+  --u8-rose:        #D4789E;   /* 主发光：低饱和玫粉 */
+  --u8-rose-lift:   #E79CBB;   /* 高光粉：扫掠 / 游标 */
+  --u8-rose-deep:   #A9486E;   /* 文字粉：读数 / 字标 */
+  --u8-lilac:       #B79FD8;   /* 辅光：淡紫刻度 */
+  --u8-lilac-lift:  #D2C2EC;   /* 辅光高光 */
+  --u8-ink:         #46203A;   /* 仪表文字 */
+  --u8-hair:        rgba(212, 120, 158, 0.28);
+  --u8-hair-soft:   rgba(183, 159, 216, 0.24);
+  --u8-glass:       rgba(253, 249, 252, 0.48);
+  --u8-glass-line:  rgba(255, 255, 255, 0.46);
+  --u8-shadow:      rgba(116, 58, 90, 0.42);
+  --u8-shadow-cool: rgba(96, 74, 130, 0.34);
+
+  /* 缓动：三条曲线刻意与 §1 的 --mari-ease 家族错开节奏
+       sweep —— 前慢后快再收慢，扫掠「先迟疑、后甩出去」；
+       flow  —— 近乎匀速但两端各留 6% 的死区，波形「走着走着停一下」；
+       drift —— 扫描线专用，振幅小、周期长。 */
+  --u8-ease-sweep:  cubic-bezier(0.55, 0.01, 0.32, 1);
+  --u8-ease-flow:   cubic-bezier(0.30, 0.06, 0.70, 0.94);
+  --u8-ease-drift:  cubic-bezier(0.45, 0.05, 0.55, 0.95);
+
+  /* 冷色退场：§1 的青色状态点原样保留在变量里（不影响语义），
+     但装饰层不再引用它 —— 本皮肤从此只剩玫粉 / 淡紫两条线。 */
+  --mari-cyan: #C9B4E4;
+}
+
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme]) {
+  --u8-rose:        #E3A2C0;
+  --u8-rose-lift:   #F2C2D6;
+  --u8-rose-deep:   #F0BCD2;
+  --u8-lilac:       #C6B2E8;
+  --u8-lilac-lift:  #DCCFF2;
+  --u8-ink:         #F4DCE9;
+  --u8-hair:        rgba(227, 162, 192, 0.26);
+  --u8-hair-soft:   rgba(198, 178, 232, 0.22);
+  --u8-glass:       rgba(24, 10, 18, 0.52);
+  --u8-glass-line:  rgba(255, 255, 255, 0.14);
+  --u8-shadow:      rgba(0, 0, 0, 0.55);
+  --u8-shadow-cool: rgba(0, 0, 0, 0.42);
+}
+
+/* 可动画的自定义属性：只用于几何量（长度 / 角度），初始值即「静止态」。
+   ★ 老内核若不支持 @property，这些 var 会退化成常量 —— 装饰变成静止画面，
+     不会消失、不会报错，所以可以放心用（Chromium 111+ 全部支持）。 */
+@property --u8-wave   { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --u8-cursor { syntax: "<length>"; inherits: false; initial-value: 0px; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   18.1 输入框：毛玻璃基底保留，壳体 / 描边 / 字标全部重排
+   ═══════════════════════════════════════════════════════════════════════════════
+   保留：§5.2 的「inset 阴影当描边」机制（几何零位移）、padding-top 24px 的
+         顶部字标带、以及 §5.2.1 的 -16px 抵消（卡片总高逐像素不变）。
+   改动：圆角形状、描边粗细与配色、模糊半径与底色、阴影方向。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 18.1.1 壳体：非对称圆角 + 双圈描边 + 侧向阴影 ─────────────────────────
+   圆角 22/22/9/9（上大下小）：上沿是「舱盖」，下沿收窄成「底座」——
+   这个形状和参考版的硬直角、以及原版的等圆角 28px 都不同，
+   同时仍是规则矩形，不切角、不影响 `inset` 环的绘制。
+   ★ 为什么敢动圆角：官方 --dsw-radius-panel 只影响这一张卡片的外观，
+     卡片内部控件的定位走 padding 而非圆角，改它不会让任何按钮位移
+     （已用 .preview/composer.html 在 1280×900、2x 下逐像素比对）。
+   ★ 描边粗细：1.5px 玫粉 + 2.5px 淡紫内衬 = 视觉 4px 的双圈「仪表压边」。
+     两圈都走 inset 阴影，所以**不占布局**；hover / 聚焦时只换色不动宽度，
+     不会出现「边框一粗就把内部挤一下」的跳动。 */
+html[data-dsh-skin="mari"] [data-composer-card] {
+  border-radius: 22px 22px 9px 9px;
+
+  /* 玻璃：22px → 15px（更「薄」），saturate 1.08 → 1.16（把底下的粉提亮一点，
+     抵消低透明度带来的发灰）。alpha 0.46 → 0.44：只降 2 个点，
+     实测正文墨色 #3A1024 对比仍在 12.5 以上，读起来毫无压力。 */
+  background-color: rgba(255, 253, 255, 0.44);
+  -webkit-backdrop-filter: blur(15px) saturate(1.16);
+  backdrop-filter: blur(15px) saturate(1.16);
+
+  /* 阴影方向：原版正下方（0 10px），本节改成**左下为主、右下为辅**的斜向投影，
+     光从右上来。两条阴影色相一暖一冷（玫 / 紫），叠出来是带色彩的投影，
+     不是参考版那种纯中性黑影。 */
+  box-shadow:
+    inset 0 0 0 1.5px rgba(196, 104, 142, 0.72),
+    inset 0 0 0 4px rgba(183, 159, 216, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    -9px 14px 30px -22px rgba(116, 58, 90, 0.52),
+    10px 20px 38px -28px rgba(96, 74, 130, 0.40);
+}
+
+html[data-dsh-skin="mari"] [data-composer-card]:hover {
+  background-color: rgba(255, 253, 255, 0.49);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(186, 94, 132, 0.80),
+    inset 0 0 0 4px rgba(183, 159, 216, 0.21),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    -9px 15px 32px -22px rgba(116, 58, 90, 0.58),
+    10px 22px 40px -28px rgba(96, 74, 130, 0.46);
+}
+
+html[data-dsh-skin="mari"] [data-composer-card]:focus-within {
+  background-color: rgba(255, 253, 255, 0.54);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(170, 74, 116, 0.88),
+    inset 0 0 0 4px rgba(183, 159, 216, 0.28),
+    inset 0 0 20px rgba(212, 120, 158, 0.10),
+    -9px 15px 34px -22px rgba(116, 58, 90, 0.62),
+    10px 22px 42px -28px rgba(96, 74, 130, 0.50);
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-composer-card] {
+  background-color: rgba(30, 13, 22, 0.52);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(227, 162, 192, 0.52),
+    inset 0 0 0 4px rgba(198, 178, 232, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    -9px 14px 30px -22px rgba(0, 0, 0, 0.62),
+    10px 20px 38px -28px rgba(0, 0, 0, 0.48);
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-composer-card]:focus-within {
+  background-color: rgba(36, 16, 26, 0.58);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(240, 188, 210, 0.72),
+    inset 0 0 0 4px rgba(198, 178, 232, 0.20),
+    inset 0 0 22px rgba(227, 162, 192, 0.12),
+    -9px 15px 32px -22px rgba(0, 0, 0, 0.68),
+    10px 22px 40px -28px rgba(0, 0, 0, 0.52);
+}
+
+/* ── 18.1.2 字标：UNIT-08 · MAKINAMI MARI ─────────────────────────────────
+   位置：left 20→18、top 8→7（整体上移 1px、左移 2px，给左侧竖条让位）；
+   字号：9→8px；字距 0.18em→0.30em（拉开成「铭牌」而不是「说明文」）；
+   透明度：0.98→0.80（退到背景层，不和正文抢注意力）。
+   左侧那条 3×8px 的竖条是这版唯一的新装饰：上紫下粉的渐变细条，
+   替代参考版「卡片右缘红黑警示条」的位置语言 —— 同样的作用（标示品牌边），
+   但落点在左上、形态是竖线而不是斜纹，两版一眼就能分开。
+   ★ z-index:-1 + 卡片 isolation:isolate 沿用 §6.1 的结论：字标在卡片背景
+     之上、正文之下，正文 / 占位 / 光标永远压住它，物理上不会重叠。 */
+html[data-dsh-skin="mari"] [data-composer-card]::before {
+  content: "UNIT-08 · MAKINAMI MARI";
+
+  position: absolute;
+  left: 18px;
+  top: 7px;
+  z-index: -1;
+
+  padding-left: 12px;
+  background-image: linear-gradient(180deg, var(--u8-lilac) 0 3px, var(--u8-rose) 3px 100%);
+  background-size: 3px 8px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+
+  font-family: var(--dsw-font-markdown-code-font-family,
+                     var(--dsw-font-family, ui-monospace, monospace));
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 10px;
+  letter-spacing: 0.30em;
+  white-space: nowrap;
+  color: rgba(150, 74, 110, 0.80);
+  text-shadow: 0 0 9px rgba(212, 120, 158, 0.30);
+
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-composer-card]::before {
+  color: rgba(240, 188, 210, 0.76);
+  text-shadow: 0 0 10px rgba(227, 162, 192, 0.45);
+}
+
+/* ── 18.1.3 编号字「08」：右上角，与左上的字标形成对角铭牌 ────────────────
+   用 tabular-nums 保证字宽固定（换字体不会左右跳），字距 0.12em 让两位数字
+   不粘连；细发光 + 1px 白色下沉影 = 压在玻璃上的「刻字」质感，
+   而不是参考版那种反白实心块（那是一种完全不同的视觉语法）。 */
+html[data-dsh-skin="mari"] [data-composer-card]::after {
+  content: "08";
+
+  position: absolute;
+  right: 16px;
+  top: 2px;
+  z-index: -1;
+
+  font-family: var(--dsw-font-markdown-code-font-family,
+                     var(--dsw-font-family, ui-monospace, monospace));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(168, 72, 110, 0.90);
+  text-shadow:
+    0 0 10px rgba(212, 120, 158, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.55);
+
+  background: none;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-composer-card]::after {
+  color: rgba(242, 194, 214, 0.92);
+  text-shadow:
+    0 0 12px rgba(227, 162, 192, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* ── 18.1.4 占位伪文字「随心输入」：缩小半档、下沉 1px、透明度降一档 ──────
+   字号 1em→0.94em（14→13.2px）：小半档就够「退后」，
+   再小会显得像报错提示。位置用 relative + top 1px 微调 ——
+   relative 不参与父级布局计算，输入框高度、光标基线都不受影响。
+   颜色 rgba(108,76,98,0.82)：在 0.44 白玻璃（实测底色约 rgb(249,235,242)）上
+   对比约 3.6 —— 依旧明显弱于正文（12.5+），但比「看不见」强得多。 */
+html[data-dsh-skin="mari"] [data-composer-card] [data-composer-placeholder] {
+  color: rgba(108, 76, 98, 0.82);
+  font-size: 0.94em;
+  font-weight: 300;
+  letter-spacing: 0.035em;
+  position: relative;
+  top: 1px;
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-composer-card] [data-composer-placeholder] {
+  color: rgba(240, 226, 234, 0.62);
+}
+
+
+/* ── 18.2 【★2026-10 第五轮】原来的「右下角 HUD 仪表板」已整段下线 ────────────
+   它当时是 html::after 上一块常驻的度盘 / 秒标尺 / 声纹面板，任何页面都显示，
+   在 1440 及以下的窗口里会压住输入框右下角（实测 1440 宽时左缘 1190、
+   输入卡右缘 1212，重叠 22px）。
+   本轮按需求改成「只在新会话空白态出现的 MARI'S MESSAGE 卡片」，
+   宿主也从 html::after 换到 [data-conversation-content]::after ——
+   这样它天然跟着对话主区域走，右栏展开时不会浮到面板上去。
+   新实现见 §21；--u8-wave / --u8-cursor 两个可动画令牌被 §21 继续复用，
+   所以 §18.0 的 @property 声明保留不动。 */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   18.3 毛玻璃统一重调：模糊半径 / 透明度 / 阴影方向
+   ═══════════════════════════════════════════════════════════════════════════════
+   ★ 铁律（§8.2.2 的结论，不能破）：**列容器上永远不写 backdrop-filter**。
+     sidebarCol / centerCol 一旦有 backdrop-filter 就会成为 position:fixed 的
+     包含块，把标题条里的折叠按钮拽进列内 —— 这是「按钮不见了」的主因。
+     所以本节只改**颜色变量**（不产生包含块），模糊只加在真正的面板上。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+html[data-dsh-skin="mari"] {
+  /* 侧栏/工具面板底：0.88 → 0.84（略透一点点），色相从纯白偏紫一档 */
+  --mari-glass-panel:  rgba(251, 246, 251, 0.84);
+  --mari-glass-strong: rgba(252, 248, 252, 0.90);
+  /* 右栏面板底：0.62 → 0.58 */
+  --mari-panel-light:  rgba(255, 250, 253, 0.58);
+  /* 共用模糊：22px → 16px（更薄、更亮），saturate 1.08 → 1.14 */
+  --mari-glass-blur:   blur(16px) saturate(1.14);
+}
+
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme]) {
+  --mari-glass-panel:  rgba(24, 10, 18, 0.88);
+  --mari-glass-strong: rgba(30, 13, 22, 0.93);
+  --mari-panel-light:  rgba(28, 11, 20, 0.86);
+}
+
+/* ── 18.3.1 工具面板（§16.3 的承接）：模糊 20→14，saturate 1.10→1.18 ────── */
+html[data-dsh-skin="mari"] [data-shell-overlay] > *,
+html[data-dsh-skin="mari"] [data-slot*="tasks"],
+html[data-dsh-skin="mari"] [data-slot*="automation"],
+html[data-dsh-skin="mari"] [data-slot*="jobs"] {
+  -webkit-backdrop-filter: blur(14px) saturate(1.18);
+  backdrop-filter: blur(14px) saturate(1.18);
+}
+
+/* ── 18.3.2 插件面板两层玻璃（§17 的承接）：只换参数，不换结构 ─────────────
+   外层：alpha 0.58→0.52，blur 30→24，radius 16→14
+   内层：alpha 0.34→0.30，blur 12→9， radius 10→9
+   ★ 为什么内层 blur 反而更小：外层的 24px 已经把底图糊成色块，
+     内层再叠一次只是重复浪费合成，还容易糊掉卡片自己的描边。
+   阴影统一改成斜向（-5px 7px），与输入框、HUD 同一个光源方向。 */
+html[data-dsh-skin="mari"] [data-plugin-scope] {
+  background: rgba(255, 255, 255, 0.52);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+  backdrop-filter: blur(24px) saturate(1.12);
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.66),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    -6px 12px 28px -14px rgba(60, 30, 45, 0.18);
+}
+
+html[data-dsh-skin="mari"] section:has(> ul > li[data-plugin-entry]) {
+  background: rgba(255, 255, 255, 0.52);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+  backdrop-filter: blur(24px) saturate(1.12);
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.66),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    -6px 12px 28px -14px rgba(60, 30, 45, 0.18);
+}
+
+html[data-dsh-skin="mari"] [data-plugin-entry] {
+  background: rgba(255, 255, 255, 0.30);
+  -webkit-backdrop-filter: blur(9px) saturate(1.06);
+  backdrop-filter: blur(9px) saturate(1.06);
+  border-radius: 9px;
+  border-color: rgba(255, 255, 255, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    -4px 6px 16px -9px rgba(60, 30, 45, 0.14),
+    4px 8px 18px -12px rgba(96, 74, 130, 0.14);
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-plugin-scope] {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html[data-dsh-skin="mari"] body[data-ds-dark-theme] [data-plugin-entry] {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── 18.3.3 插件详情（§6.6 的承接）：模糊 16→20，alpha 0.42→0.40 ──────────
+   ★ 只调这两个数：0.40 的 20px 模糊仍然「洗得白又不盖住粉」，
+     文字色阶（§6.6.1 的中性灰）完全不动 —— 一旦动字色就要重做对比度验证。 */
+html[data-dsh-skin="mari"] [data-plugin-item-detail],
+html[data-dsh-skin="mari"] [data-plugin-detail],
+html[data-dsh-skin="mari"] [data-plugin-row-detail],
+html[data-dsh-skin="mari"] [data-market-detail],
+html[data-dsh-skin="mari"] [data-plugin-panel] div:has(> [class*="detailTop"]) {
+  background-color: rgba(252, 252, 252, 0.40);
+  -webkit-backdrop-filter: blur(20px) saturate(1.02);
+  backdrop-filter: blur(20px) saturate(1.02);
+}
+
+/* 详情背后的整片主背景：16→20px，alpha 0.34→0.32（跟着面板一起变薄） */
+html[data-dsh-skin="mari"]:has([data-plugin-item-detail]) [class*="centerCol"],
+html[data-dsh-skin="mari"]:has([data-plugin-detail]) [class*="centerCol"],
+html[data-dsh-skin="mari"]:has([data-plugin-row-detail]) [class*="centerCol"],
+html[data-dsh-skin="mari"]:has([data-market-detail]) [class*="centerCol"] {
+  background-color: rgba(252, 252, 252, 0.32);
+  -webkit-backdrop-filter: blur(20px) saturate(1.02);
+  backdrop-filter: blur(20px) saturate(1.02);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   18.4 网格密度 + 扫描线节奏（只换变量与动画引用，图层定义一行不改）
+   ═══════════════════════════════════════════════════════════════════════════════
+   ★ 这里**没有**重写 body::before 的 background-image：
+     扫描线 4px 周期、网格、噪点四层图像全部沿用 §3 的定义，
+     只做两件事：
+       ① 覆盖 --mari-grid 22px → 18px（§3 的网格层就是用它算周期的）；
+       ② 把 animation 换成新的一支 u8-scan-drift（原名 mari-scan-drift 保留，
+          §3 的 keyframes 一行没删，随时可以换回去）。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+html[data-dsh-skin="mari"] {
+  --mari-grid: 18px;
+}
+
+html[data-dsh-skin="mari"] body::before {
+  /* 9s 单向匀速 → 13s 往返缓动。
+     参考版是一条刷新带 9s 扫一次（单向）；本节把「整层」做成极慢的往复呼吸，
+     振幅从 4px 缩到 3px、周期拉长 44% —— 观感从「有条带在走」变成
+     「画面在微微呼吸」，这是两种完全不同的节奏语言。 */
+  animation: u8-scan-drift 13s var(--u8-ease-drift) infinite;
+}
+
+@keyframes u8-scan-drift {
+  0%, 100% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  50%      { background-position: 0 -3px, 0 0, 0 0, 2px 2px; }
+}
+
+/* ── 18.4.1 插件卡片角标：橙色 → 淡紫（冷/暖两路都退出，只留玫紫）──────── */
+html[data-dsh-skin="mari"] [data-plugin-item]::after,
+html[data-dsh-skin="mari"] [data-plugin-row]::after {
+  background-image: linear-gradient(225deg, var(--u8-lilac) 0 2px, transparent 2px);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §19  【★2026-10·第四轮】三页分流 · 侧栏重构 · 悬浮重绘清扫 · 折叠按钮兜底
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 本轮解决什么 ──────────────────────────────────────────────────────────────
+     A. 两套页面逻辑分开：
+          对话页  = 原有 bg.jpg + 原有毛玻璃体系（§5 / §16 / §17 一行不改）
+          工作页  = assets/3.png（自带浅白底）+ 拆掉全部毛玻璃，改「线稿 HUD」
+        工作页 = 插件页 / 插件详情弹窗 / 自动化任务页 / 上下文洞察（全屏坞）
+     B. 左侧栏（工作区 · 新会话 · 插件导航）重构：布局语言取自
+        dsh-plugin-eva-theme 的侧栏方案（品牌字重 + 分组标签 + 行内光条 + 分隔线），
+        但形状 / 刻度 / 编号 / 配色全部重写，落到真希波 UNIT-08 玫紫调。
+     C. 插件页 / 自动化页「鼠标悬浮时光标闪烁抖动」：清掉 hover 期的重绘冲突。
+     D. 「左上角收起 / 展开侧边栏按钮消失」：打扫包含块 + 可见性硬兜底。
+
+   ── 三条铁律（违反任何一条都会打回旧 BUG）──────────────────────────────────
+     ① 列容器（sidebarCol / centerCol）上**永远不写** backdrop-filter / filter /
+        transform / perspective / contain / will-change。
+        它们都会让该元素成为 position:fixed 后代的包含块 —— 官方那个固定定位的
+        折叠按钮会被拽进列内、整体下移一个标题条高度（40px），观感就是「消失」。
+     ② 工作页的「去玻璃」只用 transparent + backdrop-filter:none 实现，
+        不用 opacity / display 改写，避免把工作页内的弹层、下拉一起弄没。
+     ③ 本节所有规则都挂在 html[data-dsh-skin="mari"] 下；?noskin=1 时整节失效。
+
+   ── 页面判定为什么是「属性 + 结构」双通道 ───────────────────────────────────
+     纯 CSS 判定需要 :has() 遍历整棵文档树，而对话流式输出时 DOM 每秒变化上百次，
+     大面积 :has() 会把样式失效计算推成常态开销 —— 这本身就会加剧「悬浮抖动」。
+     所以主通道交给 client.js：它在 DOM 变动后 90ms 防抖算一次，把结果写成
+     <html data-dsh-page="work">（**属性，不是新节点**），CSS 只读属性，零遍历。
+     兜底通道只保留几条「页面级且对话页绝不出现」的结构标记，防止 JS 未就绪时
+     详情弹窗还是粉底。
+     ★ 刻意**不**用 [data-session-schedule-tasks] 做判定：它是侧栏会话行的
+       悬浮预览卡（长按会话才出现），对话页也会渲染，写进来会让对话页误切背景。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── 19.0 工作页令牌（只新增，不改 §1 / §18 已有令牌）───────────────────────
+   色彩分工：
+     · 页面底  —— 3.png（近白），兜底色取「图里最亮处的粉白」，绝不用 §1 的
+                  #F1C9D8：那个饱和度在整页白底上会显脏。
+     · 文字    —— 中性墨带紫调（#241621），与玫粉背景同色系但不发红；
+                  在白底上对比度约 13.8:1，12px 小字也远超 WCAG AA。
+     · 结构线  —— 低饱和玫 / 淡紫两档，1px，只做框不做底。
+     · 强调    —— --u8-rose / --u8-lilac（§18.0 已定义，直接复用）。 */
+html[data-dsh-skin="mari"] {
+  --u8-work-bg:     url("/mari-skin/3.png");
+  /* 3.png 是 1080×439 的横幅（比例 2.46）。窗口 16:9 时 cover 会按高度铺满、
+     左右各裁掉一截；必须靠左对齐，否则裁掉的正是左侧那片留白，
+     真希波会被推到屏幕正中压在正文下面。 */
+  --u8-work-bg-pos: left center;
+  --u8-work-fill:   #FCF7FA;   /* 亮档兜底：与 3.png 最亮处同色 */
+  --u8-ink-1:       #241621;   /* 工作页主文字 */
+  --u8-ink-2:       #57414F;   /* 次级说明 */
+  --u8-ink-3:       #7A6472;   /* 弱化小字 */
+  --u8-line:        rgba(196, 122, 156, 0.34);   /* 结构线：玫 */
+  --u8-line-soft:   rgba(160, 126, 190, 0.22);   /* 结构线：紫，更淡 */
+  --u8-line-hair:   rgba(196, 122, 156, 0.14);   /* 分隔发丝线 */
+}
+
+/* 深色档：3.png 仍加载，但用与 §2 相同的 multiply 压暗
+   （background-color 在这里只是被 blend 的底色，图还是 3.png
+    → 观感是「暗场里的同一张图」）。
+   ★ 只改兜底色与线条，文字色交回 §4 的深色令牌（浅字），不要在这里钉死。 */
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme]) {
+  --u8-work-fill: #14070D;
+  --u8-line:      rgba(227, 162, 192, 0.30);
+  --u8-line-soft: rgba(198, 178, 232, 0.20);
+  --u8-line-hair: rgba(227, 162, 192, 0.12);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.1 工作页背景：自动切到 3.png
+   ═══════════════════════════════════════════════════════════════════════════════
+   只覆盖 background-image / position / color 三项，
+   **不动** --mari-bg-image 这个变量 —— 因为开机视频层的兜底背景也读它
+   （§8.1 里 video 的 background-image），一旦被改成 3.png，
+   在插件页刷新时开机动画的背景就会跟着变成白图（见 19.7 的硬保护）。
+   html 与 body 两层都要写：§2 是双保险铺图，只改一层会在缩放时露出另一层。
+
+   结构兜底的 5 个标记全部是**页面级**组件：
+     [data-shell-leading]        插件页 / 自动化页的整页挂载席（cordis 注册）
+     [data-plugin-*-detail]      插件 / 包 / 能力行 / 市场 的详情面板
+   对话页不会出现它们，所以不会误伤主会话背景。 */
+html[data-dsh-skin="mari"]:is(
+  [data-dsh-page="work"],
+  :has([data-shell-leading]),
+  :has([data-plugin-item-detail]),
+  :has([data-plugin-detail]),
+  :has([data-plugin-row-detail]),
+  :has([data-market-detail])
+) {
+  background-color: var(--u8-work-fill);
+  background-image: var(--u8-work-bg);
+  background-position: var(--u8-work-bg-pos);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+html[data-dsh-skin="mari"]:is(
+  [data-dsh-page="work"],
+  :has([data-shell-leading]),
+  :has([data-plugin-item-detail]),
+  :has([data-plugin-detail]),
+  :has([data-plugin-row-detail]),
+  :has([data-market-detail])
+) body {
+  background-color: var(--u8-work-fill);
+  background-image: var(--u8-work-bg);
+  background-position: var(--u8-work-bg-pos);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* 工作页背后是一张干净的白底插画，§3 的扫描线 / 网格 / 噪点会把白底搓成灰面 ——
+   整体压到 18%，只留一层几乎看不见的仪器质感（再高就会出现横向条带）；
+   暗角同理压到 14%，否则四角发灰、与白底接不上。
+   ★ 只改 opacity，不改 background-image / animation：
+     不重新定义图层、不重启动画，切页时不会「闪一下」。 */
+html[data-dsh-skin="mari"]:is(
+  [data-dsh-page="work"],
+  :has([data-shell-leading]),
+  :has([data-plugin-item-detail])
+) body::before {
+  opacity: 0.18;
+}
+
+html[data-dsh-skin="mari"]:is(
+  [data-dsh-page="work"],
+  :has([data-shell-leading]),
+  :has([data-plugin-item-detail])
+) body::after {
+  opacity: 0.14;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.2 工作页：拆掉所有毛玻璃，改成「线稿 HUD」
+   ═══════════════════════════════════════════════════════════════════════════════
+   顺序说明：本节写在 §6.6 / §16 / §17 / §18 之后，所以同特异性的声明直接覆盖。
+   本节统一以
+       html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+   作为祖先前缀（下称「工作页前缀」，特异性 0,2,1），
+   再乘上目标选择器自身的特异性，稳定压过 §17 / §18.3 的 (0,2,1)。
+
+   为什么「拆玻璃」顺手就治好了闪烁：
+     backdrop-filter 的元素自成一个合成层，hover 时任何一次重绘（背景色、描边、
+     阴影）都要把背后一整片重新采样；Chromium 在重采样期间该层的命中区域会有
+     1~2 帧不确定 → 光标在 pointer / default 之间反复切换 = 「闪烁、抖动」。
+     工作页现在没有 backdrop-filter，这条链路整段不存在。
+
+   替代材质：1px 内描边（box-shadow，不占布局）+ 透明底 + hover 时一层极淡玫色。
+   这样做还有个好处：3.png 本身就是浅白底，压一层白玻璃只会把 Mari 糊掉。 */
+
+/* ── 19.2.1 插件页分组容器：只留一圈极淡紫框 ── */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is([data-plugin-scope], section:has(> ul > li[data-plugin-entry])) {
+  background: none;
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--u8-line-soft);
+}
+
+/* ── 19.2.2 插件卡片 / 列表条目：透明 + 玫色发丝框 ──
+   ★ 用 inset box-shadow 而不是 border：border 会实打实占 2px，
+     官方卡片是 flex 行，加边框等于把整列内容挤窄，滚动条位置也会跟着抖。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  [data-plugin-entry] {
+  background: none;
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 0;
+  border-radius: 9px;
+  box-shadow: inset 0 0 0 1px var(--u8-line);
+  transition: background-color 140ms var(--u8-ease-flow),
+              box-shadow 140ms var(--u8-ease-flow);
+}
+
+/* ── 19.2.3 插件详情：整块「无底」，只保留读得清的文字色阶 ──
+   §6.6 已经把这几个 detail 容器做成 40% 白 + 20px 模糊；
+   工作页把底和模糊一起摘掉，其余（中性灰字阶、padding、isolation）原样保留。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-market-detail],
+    [data-plugin-panel] div:has(> [class*="detailTop"])
+  ) {
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* ── 19.2.3b 详情容器的 HUD 边框：顶部发丝线 + 左侧光条 ──
+   去掉底色以后，详情块与背景完全贴在一起，缺少「这是一个面板」的暗示。
+   这里用三条 inset 阴影代替边框：上 1px 玫线、左 2px 光条、右 1px 紫线，底部留空
+   （开口朝下，像仪表舱盖）。全部是 box-shadow，不占布局、不改 padding，
+   内容滚动时也不会因为边框出现/消失而产生 1px 抖动。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-market-detail],
+    [data-plugin-panel] div:has(> [class*="detailTop"])
+  ) {
+  box-shadow:
+    inset 0 1px 0 var(--u8-line),
+    inset -1px 0 0 var(--u8-line-hair),
+    inset 2px 0 0 var(--u8-rose);
+}
+
+/* ── 19.2.4 详情背后那层「整片白雾」：直接撤掉 ──
+   §6.6 给 centerCol 挂了 20px 模糊，为的是压住身后的粉色插画；
+   工作页背后已经是白底图，这层模糊纯属白烧 GPU（也是 hover 重绘的大头）。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  [class*="centerCol"] {
+  background-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ── 19.2.5 工具面板（自动化任务 / 任务列表）──
+   §16.3 与 §18.3.1 都给它写过 blur(14~20px)，这里统一归零。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is([data-shell-overlay] > *, [data-slot*="tasks"], [data-slot*="automation"], [data-slot*="jobs"]) {
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--u8-line-soft);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* ── 19.2.6 开关 / 分段控件：实心白卡 → 透明 + 发丝框 ── */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  [class*="switcher"] {
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--u8-line);
+}
+
+/* ── 19.2.7 行内代码 / 模块名徽标：白底 + 紫框，不用粉底 ── */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is([data-plugin-entry] code, [data-plugin-item-detail] code) {
+  background-color: rgba(255, 255, 255, 0.72);
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px var(--u8-line-soft);
+  color: var(--u8-ink-1);
+}
+
+/* ── 19.2.8 通用按钮：只清材质，不加框（工具栏图标按钮加框会过分嘈杂）── */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is(button, [role="button"]) {
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ── 19.2.9 【★2026-10 第五轮】原本这条是给「右下角 HUD 仪表板」（§18.2）擦屁股的：
+   它挂在 html::after 上，任何页面都画，工作页的白底插画右下角因此多一块
+   跟页面毫无关系的仪表盘。§18.2 整段下线后，html::after 上已经**没有任何装饰**，
+   这条 opacity:0 也就无从作用 —— 留着它反而是个陷阱：
+   将来谁再往 html::after 上画东西，会在工作页被莫名其妙地隐藏。
+   所以这里只留一个「空规则占位」的注释，不再输出任何声明。
+   ★ 现在需要「工作页隐藏」的两块装饰各有各的闸门：
+     · 顶部 5.png 横幅 → §20 的 `[data-content-phase="hero"]`（工作页根本没有 hero 相）；
+     · MARI'S MESSAGE 卡片 → §21 的 `[data-dsh-blank]`（工作页不写这个属性）。 */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.3 工作页文字 / 图标 / 强调色：兼顾可读性与 UNIT-08 玫紫 HUD 观感
+   ═══════════════════════════════════════════════════════════════════════════════
+   参考 eva-theme 的做法：不靠底色分区，靠**文字层级 + 描边 + 一点冷光**建立秩序。
+   差别在于它用「中性灰字 + 橙色主色」，这里用「紫调中性墨 + 玫粉主色 + 淡紫辅光」；
+   它把分组标题做成大字号重字重（控制台语言），这里做成等宽小字铭牌（HUD 语言）
+   —— 同源不同款。
+
+   令牌只写在浅色档的 body 上：
+     · 写 body 而不是 html，是因为 §4 深色档的令牌也写在 body 上
+       （body[data-ds-dark-theme]）—— 这里用 :not([data-ds-dark-theme]) 直接互斥，
+       深色主题自动沿用 §4 的浅字，不会出现「深底深字」；
+     · 若写在 html 上，§4 深色档（同特异性、在 body 上）反而压不住，
+       深色主题会冒出一整页深字。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  body:not([data-ds-dark-theme]) {
+  --dsw-alias-label-primary:   var(--u8-ink-1);
+  --dsw-alias-label-secondary: var(--u8-ink-2);
+  --dsw-alias-label-tertiary:  var(--u8-ink-3);
+  --dsw-alias-label-caption:   var(--u8-ink-3);
+  --dsw-alias-label-dimmed:    #9C8A95;
+
+  /* 边框统一降到「玫 35% 以下」：白底上再深就成黑框了 */
+  --dsw-alias-border-l1: var(--u8-line-hair);
+  --dsw-alias-border-l2: rgba(196, 122, 156, 0.22);
+  --dsw-alias-border-l3: var(--u8-line);
+  --dsw-alias-border-l4: rgba(196, 122, 156, 0.46);
+
+  /* hover / 选中：不用官方那层灰，换成极淡玫色（8% / 14%） */
+  --dsw-alias-interactive-bg-hover:       rgba(212, 120, 158, 0.08);
+  --dsw-alias-interactive-bg-active:      rgba(212, 120, 158, 0.14);
+  --dsw-alias-interactive-bg-hover-solid: rgba(252, 240, 246, 0.94);
+
+  color: var(--u8-ink-1);
+}
+
+/* 工作页内的分组标题 / 面板标题 / 区块标题：主墨 + 微字距
+   ★ 只换字体与颜色，不动 font-size —— 官方用 em 排行高，改了会连锁。 */
+html[data-dsh-skin="mari"][data-dsh-page="work"]
+  :is([class*="groupTitle"], [class*="sectionTitle"], [class*="panelTitle"]) {
+  color: var(--u8-ink-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* 组说明 / 状态 / 细说明：统一到二级墨色，不用 tertiary 做正文 */
+html[data-dsh-skin="mari"][data-dsh-page="work"]
+  :is([class*="groupSub"], [class*="status"], [class*="hint"], [class*="description"]) {
+  color: var(--u8-ink-2);
+}
+
+/* 图标：opacity 归 1（官方很多地方是 0.66 的淡化，在白底上会「发虚」） */
+html[data-dsh-skin="mari"][data-dsh-page="work"]
+  :is([data-plugin-entry] svg, [data-plugin-scope] svg, [data-plugin-item-detail] svg) {
+  opacity: 1;
+  color: var(--u8-ink-1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.4 左侧栏重构
+   ═══════════════════════════════════════════════════════════════════════════════
+   结构依据（app.asar 已核对，非猜测）：
+     [data-slot="sidebar"]                    侧栏插槽锚点（一切之下的祖先）
+       └ ._root                               整列壳体：padding 6px 12px
+           ├ ._logoRow                        品牌行
+           │   ├ ._brand > ._brandIdentity > ._brandMark + ._brandName
+           │   └ ._toggle                     折叠按钮（Windows 下 position:fixed）
+           ├ ._newSession                     新会话
+           ├ nav._panelList > ._panelRow × n  插件导航（._panelActive 选中）
+           ├ ._regionArea                     工作区 / 会话树（workspace 包渲染）
+           │   └ ._sectionHeader > ._sectionLabel
+           │       ._projectRow / ._sessionRow > ._title
+           └ ._footArea > ._settingsArea / ._footerActions
+
+   设计语言（与 eva-theme 同源不同款，逐项对照）：
+     ┌────────────┬───────────────────────────┬────────────────────────────────┐
+     │ 元素       │ eva-theme（参考）         │ 本节（UNIT-08 玫紫）           │
+     ├────────────┼───────────────────────────┼────────────────────────────────┤
+     │ 列底色     │ 纯控制色 + 右缘 45°警戒带 │ 粉白竖渐变 + 右缘 18px 刻度带  │
+     │ 品牌字     │ 全大写 + .1em + 等宽      │ 全大写 + .16em + 300 字重      │
+     │            │                           │ + 右上角「08」小铭牌           │
+     │ 新会话     │ 方框 + 内描边             │ 切右下角 + 左侧 3px 光条       │
+     │ 分组标题   │ 加粗 + 主色               │ 等宽小字 + 前缀发丝线          │
+     │ 导航行     │ 主色文字 + 直角           │ 序号 01/02 + 左侧 2px 光条     │
+     │ 分隔       │ 无                        │ 发丝线（顶部 / 底栏各一条）    │
+     │ 发光       │ 平面色（无发光）          │ 选中 / 悬停各一档玫色外发光    │
+     └────────────┴───────────────────────────┴────────────────────────────────┘
+
+   ★ 铁律 ① 复述：本节会给 `_root` 加 background-image，
+     但**绝不**给它加 filter / backdrop-filter / transform ——
+     `_toggle` 是它的后代，一旦建包含块，fixed 定位就会失效（按钮消失）。
+     所有「发光」都用 box-shadow / text-shadow 实现，这两者不建包含块。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 19.4.1 列壳体：粉白竖渐变 + 右缘刻度带 ─────────────────────────────────
+   三层背景各司其职（从下往上）：
+     ① 顶部提亮：模拟「头顶光」打亮品牌区，让壳体不是一块死白；
+     ② 右缘刻度：18px 一格、只 3px 宽的短刻度，像仪表面板侧边的量程条；
+     ③ 右缘竖线：把这排刻度串成一条线（1px）。
+   ★ background-origin: border-box —— 刻度必须贴到列的**外边缘**，
+     否则会被 12px 横向 padding 推到列内部。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_root"] {
+  background-color: rgba(253, 247, 251, 0.94);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(255, 255, 255, 0) 148px),
+    repeating-linear-gradient(180deg,
+      var(--u8-line) 0 1px,
+      transparent 1px 18px),
+    linear-gradient(180deg, var(--u8-line-hair), var(--u8-line-hair));
+  background-size: 100% 148px, 3px 100%, 1px 100%;
+  background-position: 0 0, right 0 top 0, right 0 top 0;
+  background-repeat: no-repeat, repeat-y, no-repeat;
+  background-origin: border-box;
+  color: var(--u8-ink-1);
+}
+
+/* 列容器本身退成透明：底色由 `_root` 的渐变负责。
+   ★ 同时把 §5.5 / §16.1 写在列上的半透明白收掉，避免两层叠出色差。 */
+html[data-dsh-skin="mari"] [class*="sidebarCol"] {
+  background-color: transparent;
+  border-right: 0;
+  box-shadow: inset -1px 0 0 var(--u8-line-hair);
+}
+
+/* ── 19.4.2 品牌区 ──────────────────────────────────────────────────────────
+   字重降到 300（官方 600）：字距拉到 .16em 后，粗体在窄列里会糊成一团黑块。
+   颜色不用正黑，用紫调墨 —— 与全局文字同一支，视觉更整。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_brandName"] {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 300;
+  color: var(--u8-ink-1);
+  text-shadow: 0 0 12px rgba(212, 120, 158, 0.24);
+}
+
+/* 品牌名末尾补一个「08」铭牌：伪元素，不占 DOM、不吃布局（inline 追加在字后） */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_brandName"]::after {
+  content: "08";
+  margin-left: 5px;
+  padding: 0 3px;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 12px;
+  color: var(--u8-lilac);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--u8-line-soft);
+  vertical-align: super;
+}
+
+/* 品牌图标：淡紫描边感（用 text-shadow 做外发光，绝不用 filter: drop-shadow） */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_brandMark"] {
+  color: var(--u8-rose-deep);
+  text-shadow:
+    0 0 10px rgba(212, 120, 158, 0.55),
+    0 0 22px rgba(183, 159, 216, 0.28);
+}
+
+/* ── 19.4.3 新会话：切右下角 + 左侧 3px 光条 ────────────────────────────────
+   切角用 clip-path（多边形裁切，不加伪元素、不加 padding），右下角去掉 9px ——
+   与 §18.1.1 输入框「上大下小的舱盖」呼应，但尺寸小得多，不会做成异形板。
+   ★ clip-path 同样是「建包含块」的属性，但作用在按钮自己身上，
+     它内部没有 fixed 后代，所以安全。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_newSession"] {
+  background-color: rgba(255, 255, 255, 0.62);
+  background-image: linear-gradient(100deg, rgba(212, 120, 158, 0.12), rgba(212, 120, 158, 0) 62%);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+  box-shadow: inset 3px 0 0 var(--u8-rose);
+  color: var(--u8-rose-deep);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: background-color 150ms var(--u8-ease-flow),
+              box-shadow 150ms var(--u8-ease-flow);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_newSession"]:hover {
+  background-color: rgba(212, 120, 158, 0.14);
+  background-image: none;
+  box-shadow:
+    inset 3px 0 0 var(--u8-rose),
+    0 4px 16px -8px rgba(196, 110, 146, 0.55);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_newSession"] svg {
+  color: var(--u8-rose-deep);
+  opacity: 1;
+}
+
+/* ── 19.4.4 插件导航：序号 01/02/03 + 左侧光条 ─────────────────────────────
+   序号走 CSS 计数器：`_panelList` 重置、`_panelRow` 递增、`::after` 输出。
+   纯 CSS、零 DOM，顺序与视觉顺序一致（nav 里就是从上到下这几行）。
+   ★ 编号放行尾而不是行首：行首是官方图标位（`_panelGlyph`），
+     插进去要把图标挤开 14px，展开态与折叠态的行宽都会变。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelList"] {
+  counter-reset: u8nav;
+  border-top: 1px solid var(--u8-line-hair);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelRow"] {
+  counter-increment: u8nav;
+  position: relative;
+  color: var(--u8-ink-1);
+  border-radius: 4px;
+  transition: background-color 130ms var(--u8-ease-flow),
+              box-shadow 130ms var(--u8-ease-flow);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelRow"]::after {
+  content: counter(u8nav, decimal-leading-zero);
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--u8-lilac);
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelRow"]:hover {
+  background-color: rgba(212, 120, 158, 0.08);
+}
+
+/* 选中行：左侧 2px 光条 + 一层从光条向右淡出的玫色 + 外发光 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelActive"] {
+  background-color: transparent;
+  background-image: linear-gradient(90deg, rgba(212, 120, 158, 0.18), rgba(212, 120, 158, 0) 72%);
+  box-shadow:
+    inset 2px 0 0 var(--u8-rose),
+    0 0 14px -6px rgba(212, 120, 158, 0.70);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelActive"]::after {
+  color: var(--u8-rose);
+  opacity: 1;
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelGlyph"] {
+  color: var(--u8-rose-deep);
+}
+
+/* ── 19.4.5 工作区 / 会话树：分组标签 = 铭牌 + 前缀发丝线 ───────────────────
+   `_sectionHeader` 是 flex + justify-content:flex-end，子元素依次是
+   标签、搜索槽、动作按钮。`::before` 拿 flex:1 吃掉左侧所有空位并画一条渐变线，
+   于是「工作区」三个字被一条 HUD 横线推到右边 —— 这是参考版没有的处理。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sectionHeader"]::before {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  margin-right: 8px;
+  background: linear-gradient(90deg, transparent, var(--u8-line-hair) 78%, var(--u8-line));
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sectionHeader"] {
+  color: var(--u8-ink-3);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sectionLabel"] {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--u8-ink-3);
+}
+
+/* 工作区行 / 会话行：行高、缩进、间距一律沿用官方，只换圆角与三态材质 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_projectRow"],
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sessionRow"] {
+  border-radius: 6px;
+  color: var(--u8-ink-1);
+  transition: background-color 120ms var(--u8-ease-flow);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_projectRow"]:hover,
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sessionRow"]:hover {
+  background: rgba(212, 120, 158, 0.07);
+}
+
+/* 选中会话：左侧 2px 光条 + 淡玫底。光条用 inset 阴影画，不占宽度。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sessionRow"][class*="_selected"] {
+  background: rgba(212, 120, 158, 0.12);
+  box-shadow: inset 2px 0 0 var(--u8-rose);
+}
+
+/* 工作区名（含「未分组」）加实一档，与会话标题拉开主次 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_projectText"] {
+  color: var(--u8-ink-1);
+  font-weight: 600;
+}
+
+/* 会话行左侧的状态点格子：淡紫，与玫色正文分成两支 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_slot"] {
+  color: var(--u8-lilac);
+  opacity: 0.9;
+}
+
+/* 列表底部淡出层：官方用 --dsw-specific-sidebar-fill 收边，
+   我们换了壳体底色，这里必须同步，否则列表底部会出现一条色差带。
+   ★ 用 [class*="_fade"]:not([class*="fading"]) 收窄：侧栏根部还有一个
+     `_fading`（收起过程的整列淡出类），通配进去会把整列弄透明。 */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_fade"]:not([class*="fading"]) {
+  background: linear-gradient(to bottom, rgba(253, 247, 251, 0), rgba(253, 247, 251, 0.96));
+}
+
+/* ── 19.4.6 底栏（设置 / 页脚动作）：顶部发丝线 + 玫色图标 ── */
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_footArea"] {
+  border-top: 1px solid var(--u8-line-hair);
+  padding-top: 4px;
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_footArea"] [class*="_iconButton"],
+html[data-dsh-skin="mari"] [data-slot="sidebar.settings"] {
+  color: var(--u8-ink-2);
+}
+
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_footArea"] [class*="_iconButton"]:hover {
+  color: var(--u8-rose-deep);
+  background-color: rgba(212, 120, 158, 0.10);
+}
+
+/* ── 19.4.7 【★2026-10 第五轮 · 需求 2】原规则「给折叠按钮一个 HUD 方框」已撤 ──
+   原规则给展开态的 `._toggle` 加了 4px 圆角 + 内描边 + 玫色文字，hover 再补一层
+   玫底与发光 —— 那是自创外观，不是官方也不是 eva 的样子。
+   本轮要求「样式、图标、点击切换全部还原 eva 官方」，而 eva-theme 对这颗按钮
+   一条规则都没写，所以这里**不输出任何声明**：外观 = 官方
+   28×28 / radius-sm / label-secondary / 透明底 / hover 走 interactive-bg-hover。
+   位置与尺寸本来就不归本节管（§5.5.9 只钉 Windows 标题条那一组数值）。 */
+
+/* 深色档：壳体改深粉黑，刻度与发丝线提亮一档（深底上 0.14 的玫几乎不可见） */
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme]) [data-slot="sidebar"] [class*="_root"] {
+  background-color: rgba(22, 9, 17, 0.94);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 148px),
+    repeating-linear-gradient(180deg, var(--u8-line) 0 1px, transparent 1px 18px),
+    linear-gradient(180deg, var(--u8-line-hair), var(--u8-line-hair));
+}
+
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme])
+  [data-slot="sidebar"] :is([class*="_brandName"], [class*="_projectText"], [class*="_title"]) {
+  color: #F6E6EF;
+}
+
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme]) [data-slot="sidebar"] [class*="_newSession"] {
+  background-color: rgba(255, 255, 255, 0.07);
+  background-image: linear-gradient(100deg, rgba(227, 162, 192, 0.16), rgba(227, 162, 192, 0) 62%);
+  color: #F2C2D6;
+}
+
+html[data-dsh-skin="mari"]:has(body[data-ds-dark-theme])
+  [data-slot="sidebar"] [class*="_fade"]:not([class*="fading"]) {
+  background: linear-gradient(to bottom, rgba(22, 9, 17, 0), rgba(22, 9, 17, 0.96));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.5 悬浮闪烁 / 抖动：清掉 hover 期的重绘冲突
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 病灶链（三个来源叠在一起，缺一个都治不干净）────────────────────────────
+   ① `filter: brightness(1.06)`（§7，作用在**所有** button:hover 上）
+        · filter 会让元素自成一个合成层，每次 hover 都要对整块重做一次颜色矩阵；
+        · 如果这块正好压在工作页原来的毛玻璃面板上，毛玻璃还要跟着重新采样 ——
+          两层合成层在同一帧里互相等待，Chromium 会插入一次「图层重建」，
+          重建窗口内该元素的命中测试区域有 1~2 帧不确定；
+        · 命中区域不确定 → 光标在 pointer / default 之间来回切 →
+          肉眼就是「光标一直闪、跟着抖」。
+   ② 工作页原有的 backdrop-filter（§17 / §18.3）：见 19.2，已整段拆除。
+   ③ transition 缺省值让个别行在 hover 时**同时**改背景、描边、字号，
+      其中任意一个触发回流，hover 边界就挪；边界一挪又触发一次 :hover 判定
+      —— 正反馈，表现为「越抖越厉害」。
+
+   ── 修法（三层，全部只作用在工作页，对话页观感一字不改）────────────────────
+     a) 把 brightness 换成纯色叠层：只改 background-color，只走绘制不走合成。
+     b) 把 transition-property 收窄到「纯绘制」白名单，禁止几何属性被过渡。
+     c) 兜底：hover 期禁止 transform，把任何残留的位移或缩放掐死。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 19.5.1 摘掉 hover 提亮滤镜（只针对工作页）──
+   本选择器比 §7 的 `html[...] button:hover` 多一个属性，特异性更高，
+   本来靠顺序 + 特异性就能覆盖；!important 只是防止将来有人把 §7 后移。 */
+html[data-dsh-skin="mari"][data-dsh-page="work"] button:hover,
+html[data-dsh-skin="mari"][data-dsh-page="work"] [role="button"]:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* ── 19.5.2 过渡白名单 ──────────────────────────────────────────────────────
+   只允许「颜色类」属性参与过渡。它们全部只触发 paint，不改盒模型、
+   不改命中区域，因此不可能出现边界抖动。
+   ★ 用 transition-property 而不是 transition 简写：简写会带默认时长与曲线，
+     把官方为某些组件写好的 transition 一并覆盖，属于越权。 */
+@media (hover: hover) {
+  html[data-dsh-skin="mari"][data-dsh-page="work"]
+    :is(button, [role="button"], [role="menuitem"], li[data-plugin-entry], a) {
+    transition-property: color, background-color, border-color, box-shadow, outline-color, opacity;
+    transition-duration: 140ms;
+    transition-timing-function: var(--u8-ease-flow);
+  }
+}
+
+/* ── 19.5.3 hover 期禁止几何变化 ────────────────────────────────────────────
+   官方个别行会在 hover 时把「文件夹」图标换成「箭头」（display 切换），
+   那本身不产生位移；但只要有 transform / scale 残留，光标就会在放大的边界上
+   来回切。这里把 hover 态的 transform 直接钉成 none。 */
+html[data-dsh-skin="mari"][data-dsh-page="work"]
+  :is(button, [role="button"], [role="menuitem"], li[data-plugin-entry]):hover {
+  transform: none !important;
+}
+
+/* ── 19.5.4 卡片 / 按钮 hover 材质：只有「淡玫底 + 左侧光条」，零滤镜、零位移 ── */
+html[data-dsh-skin="mari"][data-dsh-page="work"] [data-plugin-entry]:hover {
+  background-color: rgba(212, 120, 158, 0.07);
+  box-shadow:
+    inset 2px 0 0 var(--u8-rose),
+    inset 0 0 0 1px var(--u8-line);
+}
+
+html[data-dsh-skin="mari"][data-dsh-page="work"] button:hover {
+  background-color: rgba(212, 120, 158, 0.08);
+  outline-color: var(--u8-line);
+}
+
+/* ── 19.5.5 触屏：不要粘滞 hover ────────────────────────────────────────────
+   触屏上 :hover 会在点击后「粘住」，配合 transition 就是一次持续重绘。
+   这里把卡片的 hover 材质还原成静止态。 */
+@media (hover: none) {
+  html[data-dsh-skin="mari"][data-dsh-page="work"] [data-plugin-entry]:hover {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--u8-line);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.6 「左上角收起 / 展开侧边栏按钮消失」：根治 + 硬兜底
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 病灶回顾（§5.5 / §8.2.2 已定位过一次，这里补上最后一环）────────────────
+   官方折叠态真值：`collapsedWidth = darwin || [data-windows-titlebar] ? 0 : 56`
+   即 Windows 标题条环境下左列宽度被压成 **0**，按钮靠 `position: fixed` 逃出列外。
+   `position: fixed` 的包含块是「最近的、建了包含块的祖先」，没有就是视口。
+   而下面这些都建包含块：transform / filter / backdrop-filter / perspective /
+   contain: paint / will-change: transform|filter。
+
+   最隐蔽的一环是 §5.5.3：它给折叠态的列写了 `visibility: hidden` 来「熄灯」。
+   这本身不算错（子元素可用 visible 覆盖回来），但它把「按钮能否显示」这件事
+   完全押在「`.toggle` 这个类名匹配得上」这一个假设上 ——
+   而类名是 CSS Module 的 `_<hash>_toggle`。本次核对确认目前还匹配，
+   但这是整条链路里唯一的单点故障：官方一旦改命名或加一层包裹，按钮就彻底没了。
+
+   ── 本轮做法：把这个单点去掉 ────────────────────────────────────────────────
+     ① 折叠态**不再对列写 visibility: hidden**（用 19.6.1 显式还原）。
+        理由：列宽已经是 0 且 `overflow: hidden`，列内的一切本来就画不出来；
+        真正需要清的只有「0 宽处仍在绘制的背景 / 边框 / 阴影」——
+        那部分 §5.5.3 用 `background: none` 已经处理干净，`visibility` 是多余的。
+        去掉之后，即使 `.toggle` 的类名变了，按钮依然可见可点。
+     ② 列与其壳体上把全部「包含块触发器」显式清成 none（19.6.2）。
+     ③ 按钮自身再钉一次可见性 / 层级 / 可点击（19.6.3），作为第三道保险。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 19.6.1 撤销 §5.5.3 的列级 visibility:hidden ────────────────────────────
+   ★ 同特异性、位置更靠后 → 直接覆盖，不需要 !important。
+   ★ 只还原 visibility / pointer-events 两项；§5.5.3 里「清背景 / 清边框 /
+     清阴影 / 清 backdrop-filter」四条原样保留（那才是它真正需要做的事）。 */
+html[data-windows-titlebar][data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"],
+html[data-platform="darwin"][data-dsh-skin="mari"] [data-sidebar-collapsed] [class*="sidebarCol"] {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ── 19.6.2 打扫包含块触发器 ────────────────────────────────────────────────
+   作用对象是「折叠按钮的所有祖先」，即 sidebarCol 与侧栏壳体 `_root`。
+   ★ 只清这五个属性，不动 display / position / overflow / 宽高 ——
+     列宽的收起动画由官方 grid 过渡驱动，动它们会打断过渡。
+   ★ contain: none 不能省：§8.2.1 的待命态、以及未来任何一段样式，
+     只要写过 contain: paint，fixed 就会重新被劫持。 */
+html[data-dsh-skin="mari"] [class*="sidebarCol"],
+html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_root"] {
+  transform: none;
+  filter: none;
+  -webkit-filter: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  perspective: none;
+  contain: none;
+  will-change: auto;
+}
+
+/* ── 19.6.3 按钮硬兜底：两道保险 ────────────────────────────────────────────
+   ① visibility / opacity 归位 —— 抵消任何祖先或伪类遗留的隐藏；
+   ② z-index 抬到 35 —— 标题条拖拽层 `.frame::before` 与 web 玻璃条
+      `html::before`（z-index 1）都在它下面，保证「看得见也点得到」。
+   ★ 位置（position / left / top）仍只由 §5.5.9 在 Windows 下钉一次，
+     本节**不重复写**，避免两处数值不一致。
+   ★ 【★2026-10 第五轮 · 需求 2】原来这里还有两条「改外观」的声明，已删：
+       · `display: inline-flex !important` —— 官方 ._iconButton 本来就是
+         inline-flex，这条对官方是空操作，但它会盖掉任何 flex 相关的新写法，
+         属于「没有收益的风险」；
+       · 折叠态 `svg { display:inline-block !important }` —— 强制点亮图标，
+         与 §5.5.8 一起破坏了官方 railMark / panelIcon 的切换，一并撤掉。 */
+html[data-dsh-skin="mari"] [class*="sidebarCol"] [class*="toggle"] {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 35;
+  -webkit-app-region: no-drag;
+}
+
+/* 展开态：折叠按钮的 hover 也不用滤镜 —— 这一列上有渐变背景，
+   brightness 会把它和背景拉进同一次双层合成，是抖动的高发点。
+   ★ 只关滤镜；底色 / 文字色 / 圆角全部归官方。 */
+html[data-dsh-skin="mari"] [class*="sidebarCol"] [class*="toggle"]:hover {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.7 开机动画层硬保护：3.png 绝不能渗进视频层
+   ═══════════════════════════════════════════════════════════════════════════════
+   背景切换改的是 html / body 的 background-image，而 §8.1 里那个全屏 video
+   的「未就绪兜底背景」也写的是 `var(--mari-bg-image)`。
+   如果在插件页刷新，开机视频还没解码出来的那一小段时间里，
+   屏幕上会先闪过一张白底 3.png。
+   这里把视频层的兜底背景**钉死**在 bg.jpg —— 与视频末帧同一张图，
+   无论当前在哪一页，开机动画从第一帧到淡出结束都只会是粉底真希波。
+   ★ 只覆盖 background-image，不动 background-color（那要与 §1 兜底粉一致）。 */
+html[data-dsh-skin="mari"] > video.dsh-mari-boot-video {
+  background-image: url("/mari-skin/bg.jpg");
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   19.8 降级与无障碍
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* 不支持 :has() 的老内核（Chromium < 105）：19.1 / 19.2 的结构兜底整段失效，
+   但 client.js 写的 [data-dsh-page="work"] 仍然有效 —— 功能不缺，
+   只是首帧可能先闪一下粉底。这里把首帧兜底底色拉近白，让闪一下也不刺眼。 */
+@supports not selector(:has(*)) {
+  html[data-dsh-skin="mari"][data-dsh-page="work"] body {
+    background-color: var(--u8-work-fill);
+  }
+}
+
+/* 减少动效：侧栏与卡片的过渡整体关掉（只关动，不关可见性） */
+@media (prefers-reduced-motion: reduce) {
+  html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_newSession"],
+  html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_panelRow"],
+  html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_projectRow"],
+  html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_sessionRow"],
+  html[data-dsh-skin="mari"] [data-slot="sidebar"] [class*="_toggle"],
+  html[data-dsh-skin="mari"][data-dsh-page="work"] [data-plugin-entry] {
+    transition: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §20  新会话页顶部 HUD 横幅：5.png 等比缩到 82%，居中于对话主区域顶部
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 第六轮（本轮）的改动：从「主视觉」收回成「小型 HUD 横幅」───────────────
+   上一版是 100% 全宽：1440 宽的主区域得到 1129×454，占掉可视高度的三分之一强，
+   标题「探索未至之境」被压到很下面，观感是「一整张大图」而不是「标题上方一条
+   仪表带」。本轮整体等比缩到 82%（宽度 min(82%, 1240px) + align-self:center），
+   高度随之落到 372px。**只是缩放，裁切方案一个字没动** —— 元素盒仍然是真框
+   的盒子，所以 ①② 两组数字继续成立，08 / 标题条 / 真希波 / 右下 MARI'S
+   MESSAGE 全部完整可见，也不会被拉伸。
+   ── 本轮（第五轮）与上一版的区别 ─────────────────────────────────────────────
+   上一版把 4.png 挂在 `.headline::before` 上，做成「标题正上方一张小卡」。
+   本轮按需求改成 6.jpg 的样子：**横幅 = 一条横贯对话主区域的顶栏**，
+   宽度等于整个对话主区域、明显长于底部输入框，高度按图自身的比例走，
+   不再缩成一块卡片。于是宿主只能换人 —— `.headline` 在输入坞里，
+   而输入坞被官方限宽（见下），永远做不出「比输入框更宽」。
+
+   ── 官方结构（app.asar 运行时代码核对）──────────────────────────────────────
+     div[data-conversation-content][data-content-phase]   ← ConversationRoot.body
+       ├ div._scrollBody[data-conversation-scroll]        ← flex:1，hero 相里垂直居中
+       │    └ div._composerSeat[data-composer-seat]
+       │         └ div._composerStack._composerHero       ← 限宽：卡片宽 + 2×16px 净空
+       │              ├ HeroShell（鱼形 logo + 标题 + 预览版徽标）
+       │              ├ ._heroWorkspaceRow
+       │              └ 输入卡
+       └ WidthControls（右侧拖拽把手，绝对定位）
+
+   关键量（ConversationRoot.module.css 原文）：
+     ._body        { --dsh-composer-card-max-width: chat宽+32; flex-direction:column;
+                     position:relative; flex:1 }            ← 全宽、且已经是 relative
+     ._composerHero{ width: min(card+2*clearance, 100%) }   ← 输入坞只有 ~984px
+     ._scrollBody  { flex:1; overflow-y:auto }
+     [data-phase=hero] ._scrollBody{ justify-content:center }
+
+   所以要「与对话主区域等宽」，唯一干净的宿主就是 **body 自己**：
+   它 `position:relative` + `display:flex; flex-direction:column`，
+   插一个 `::before` 就是它最上面那个 flex item —— 天然全宽、天然在顶部、
+   天然把 `_scrollBody` 往下推，不遮任何东西、不用绝对定位、不用算高度。
+   ★ 这也解释了为什么本轮不再用 `.headline::before`：那条路的上限是 984px，
+     再怎么调都长不过输入框（输入卡本身就是 952px）。
+
+   ── 为什么只需要 `[data-content-phase="hero"]` 一个闸门 ─────────────────────
+   phase 由 ConversationRoot 计算（源码）：
+       settling = 有 session && blank && loading
+       hero     = 没有 sessionId || (blank && (open || summaryBlank))
+       phase    = settling ? "settling" : hero ? "hero" : "active"
+   即：**hero 相 = 还没发过任何消息的空白新会话**。
+     · 历史会话页 = active → 进不来；
+     · 首轮提交的交接帧 = settling → 进不来；
+     · 插件页 / 自动化页：那里根本没有 ConversationRoot（被 [data-shell-leading]
+       取代），也进不来。§20.4 再补一条 data-dsh-page="work" 的硬保险。
+   ★ 这条闸门同时满足了需求里「发送消息后自动隐藏」：提交那一刻 React 立刻把
+     phase 从 hero 改成 settling/active，横幅（连同图上那块 MARI'S MESSAGE）
+     一起消失，没有任何 JS 参与。
+
+   ── 5.png 的白边怎么去掉（本轮的重点）──────────────────────────────────────
+   5.png 是 1817×866 的成品图，但真框只占 x 1..1805 / y 80..805：
+     · 上方 80px、下方 61px 是纯底色留白（占整图高度 16%）—— 这是「大片白色」的主因；
+     · 右上 (1741,80)→(1805,150)、左下 (1,739)→(67,805) 两处是**切角**，
+       切角外侧也是底色 —— 不裁掉就是两块贴错的白色三角。
+   做法两层：
+     ① 背景按「只显示裁切框」缩放 + 移位（不是 contain，也不是 100% 100%：
+        后者会把 866 硬压成 725，人物会被压扁 16%）：
+           scale = 1817 / 1804 = 100.72%      ← 让 1804 的框宽刚好铺满元素
+           纵向溢出 = 0.48005W − 0.40188W = 0.07817W
+           需要上移 80/1817 = 0.044029W  →  position-y = 0.044029 / 0.07817 = 56.3%
+           需要左移  1/1804 = 0.000554W  →  position-x = 7.7%
+        （background-position 的百分比是「元素盒 − 图」的分配比例，
+          所以这两个数是算出来的，不是试出来的。）
+     ② `clip-path` 按实测轮廓切掉四个角（右上、左下是斜切，左上是一条极窄的
+        0.5% 斜边，右下本来就是直角）。七个点，全部是实测像素换算的百分比。
+   结果：元素盒 = 真框的盒子，白色留白一格都不剩，人物比例不变。
+
+   ── 尺寸（第六轮已缩小一档）─────────────────────────────────────────────────
+     aspect-ratio: 1804 / 725（= 2.488 : 1，与真框完全一致，缩放不动它）
+     width: min(82%, 1240px) → 这是「整体等比缩到 82%」的实现方式：
+                               元素盒仍是真框的盒子，所以 ① 的
+                               background-size / position 与 ② 的 clip-path
+                               三组数字**一个字都不用改**。
+     ★ 为什么宽高必须同比例：5.png 的竖向没有可裁的留白（见 §20.1 注释），
+       只压高度必然裁掉 08 与人物的下沿。等比缩放 = 高度 82% + 宽度 82%，
+       与需求里「高度约为当前 75%~85%」一致，且「等比例、不拉伸、不变形」
+       是严格成立的。
+     ★ 1240px 上限：超宽屏（2560 宽）下 82% 会变成 2100×844 —— 那已经不是
+       「标题上方的小型 HUD 横幅」而是主视觉了。封顶后横幅在大屏上保持
+       固定尺寸的仪表条观感，在小屏（≤1512 主区域宽）上则完全是 82% 等比。
+     实测（主区域宽 → 横幅盒 → 高度）：
+       1920×1080（主区域≈1660）→ 1240×498（上一版 1660×667）
+       1440×900 （主区域≈1129）→  926×372（上一版 1129×454）
+       1280×900 （主区域≈ 969）→  795×319（上一版  969×389）
+     max-height: calc(100% - 240px)
+                             → 只在「主区域放不下横幅 + 输入坞」时才触发，
+                               触发时由 cover 上下对半裁一截（见 20.1 的注释）。
+   ★ 为什么不做「宽度 100% + 只减高度」：那需要裁图，而这张图竖着没有余量。
+     同理也不做 max-width 更小的封顶：82% 已经让横幅落在「标题上方一条
+     仪表带」的尺度上，再窄就会与输入框宽度（952px）脱节。
+     代价是超宽且矮的窗口仍会触发 max-height 裁上下边缘 ——
+     这是「全宽 + 完整构图」在这种窗口上唯一的取舍。实测临界点：
+       1920×1080（主区域≈1640×1035）→ 不裁（498 + 219 < 1035）
+       1440×900 （主区域≈1129×855） → 不裁（372 + 219 < 855）
+       1280×900 （主区域≈969×855）  → 不裁（319 + 219 < 855）
+       1440×808 （主区域≈1129×763） → 不裁（372 + 219 < 763）  ← 上一版要裁 1/6
+     缩小之后连「宽而矮」的窗口都不再裁了，四档全部完整。
+
+   ── 与入场动画的关系 ─────────────────────────────────────────────────────────
+   横幅是 body 的第一个 flex item，**不在输入坞的 opacity 连乘链里**，
+   所以它可以比 §8.3 的第一档（0ms）稍晚一点点起跑，自己占一拍：
+   120ms 起、620ms 收，收在 740ms，早于 §8.3 的 960ms 总时长，也早于
+   client.js 摘 armed 的 1080ms。
+   ★ 只动 opacity / transform，不动 clip-path：clip-path 已经被 ① 占了。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 20.1 横幅本体 ────────────────────────────────────────────────────────── */
+html[data-dsh-skin="mari"]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  content: "";
+
+  /* 顶部独占一条：body 是 column flex，这一条就是它最上面的格子 */
+  flex: 0 0 auto;
+
+  /* ★ 第六轮：整条按 **82% 等比缩小**（宽度与高度同比例，见本节「尺寸」）。
+     为什么不是「只压高度」：真框 1804×725 里状态条、底边框、右下 MARI'S
+     MESSAGE 全都贴着上下边缘，竖向没有可裁的留白 —— 只把 aspect-ratio 的
+     分母调大，等于让 background 被纵向裁掉，08 与人物下沿会一起消失。
+     要同时满足「高度降到 8 成 / 不拉伸不变形 / 四个元素完整可见」，
+     几何上唯一的解就是宽高同比例缩小。 */
+  width: min(82%, 1240px);
+  /* ★ 第七轮：无论侧栏展/收，横幅都不许超出可视窗口。
+     正常情况下 82% 的父容器宽永远 ≤ 窗口宽，这一条只是兜底 ——
+     真正的风险是「父容器本身被算得比窗口还宽」（折叠动画中途、
+     或将来某个版本给 body 写死宽度），那时 82% 也会跟着溢出。
+     扣掉 48px 是留给两侧呼吸与竖向滚动条的余量。 */
+  max-width: calc(100vw - 48px);
+  /* column flex 的 align-items 默认是 stretch，会无视上面的 width；
+     只有把这一项自己对齐到 center，声明的宽度才真正生效。 */
+  align-self: center;
+  /* 缩小后与下方标题之间仍要留一口气。hero 相里 _scrollBody 是垂直居中的，
+     大多时候间距由居中自动让出来；这里补一条下限，防止内容超高时贴死。 */
+  margin-bottom: clamp(8px, 1vh, 16px);
+
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1804 / 725;
+
+  /* 矮窗兜底：横幅再怎么大，也必须给输入坞留出位置。
+     ★ 为什么不写 vh：窗口高度和「主区域宽度」没有固定比例，
+       窄而高的窗口用 vh 会白白把横幅压扁；这里直接按**父容器高度**扣掉
+       输入坞需要的 240px（实测输入坞 219px + 一点呼吸），
+       剩下的全给横幅 —— 正常窗口（主区域 ≥1100 宽、≥840 高）永远不触发，
+       只有「又宽又矮」的窗口才会触发，触发时由 cover 上下对半裁一截。
+     ★ 百分比 max-height 在 flex 项上按父容器的 definite height 解析；
+       万一父容器高度不定，它退化 auto（= 不裁），属于 fail-open。 */
+  max-height: calc(100% - 240px);
+
+  background-image: url("/mari-skin/5.png");
+  background-repeat: no-repeat;
+  background-color: transparent;
+  /* ① 只显示真框：见本节开头那三行算式 */
+  background-size: 100.72% auto;
+  background-position: 7.7% 56.3%;
+
+  /* ② 切掉四个角（右上 / 左下是斜切，左上极窄，右下直角） */
+  clip-path: polygon(
+    0.1% 8.5%,
+    0.6% 0.1%,
+    96.5% 0.1%,
+    99.9% 9.7%,
+    99.9% 99.9%,
+    3.7% 99.9%,
+    0.1% 90.9%
+  );
+
+  /* 纯装饰：不吃点击、不被选中、不参与无障碍朗读 */
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 深色档：图本身是浅色成品图，直接用 filter 压到与 §4 深色玻璃同一亮度区间。
+   只动 filter（不动尺寸 / 位置），换主题零位移。
+   ★ 不用 box-shadow / drop-shadow：横幅是通栏，投影只会是一条穿帮的横线。 */
+html[data-dsh-skin="mari"] body[data-ds-dark-theme]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  filter: brightness(0.88) saturate(1.03);
+}
+
+/* ── 20.1b 侧栏收起态：横幅不再跟着「变宽的主区域」一起放大 ────────────────
+   官方把 `data-sidebar-collapsed` 挂在栅格壳 `.frame` 上（不是 html），
+   收起时侧栏列从 ~260px 收到 ~56px，中间列变宽 ~20%。
+   横幅是「父容器宽度的 82%」，于是它也跟着胖 20%：
+     1440 窗口：展开 926×372 → 收起 1103×443，
+   比输入框（952）还宽出一大截，观感就是「顶栏撑破了内容列」。
+   这里用 max-width 把它按住 —— 不改 width、不改 aspect-ratio，
+   所以缩的是整条（宽高同比），图不会被压扁、也不会被裁。
+
+   ★ 为什么是 69%：收起后中间列约为展开时的 1.19 倍，
+     0.82 / 1.19 ≈ 0.69 —— 换算下来横幅的**绝对宽度**与展开态基本持平，
+     侧栏开合时横幅原地不动，只有两边的留白在变，这是最不打扰的观感。
+   ★ 1240px 与 20.1 的上限**取同一个值**：这样在超宽屏上，
+     收起态也永远不会比展开态更大，两种状态的上限是一条线。
+   ★ 为什么用 max-width 而不是直接写 width:69%：
+     需求要求「不固定宽度」。max-width 只在「父容器变宽」时才起作用，
+     窗口本身变窄时仍由 20.1 的 width:min(82%,1240px) 主导，继续等比缩小。
+   ★ 100vw 那一项是硬保险：任何情况下都不越过可视窗口，不产生横向滚动条。
+   实测（横幅盒 = 宽 × 高，比例恒为 2.488 : 1）：
+     1024 窗口  展开 585×235 → 收起 641×258
+     1280 窗口  展开 795×319 → 收起 818×329
+     1440 窗口  展开 926×372 → 收起 928×373
+     1920 窗口  展开 1240×498 → 收起 1240×498（同值）
+     六种组合下 document 横向溢出均为 0。 */
+html[data-dsh-skin="mari"]
+  [data-sidebar-collapsed]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  max-width: min(69%, 1240px, calc(100vw - 48px));
+}
+
+/* ── 20.2 入座：reserve 好位置再淡入 ────────────────────────────────────────
+   起点与 20.3 的关键帧逐值相同（10px），交接那一帧不会跳。 */
+@keyframes u8-hud-band-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+html[data-dsh-skin="mari"][data-dsh-skin-armed]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  opacity: 0;
+  transform: translate3d(0, -10px, 0);
+}
+
+html[data-dsh-skin="mari"][data-dsh-skin-go]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  animation: u8-hud-band-in 620ms var(--mari-ease-enter) 120ms both;
+}
+
+/* ── 20.3 可见性硬保险 ──────────────────────────────────────────────────────
+   主闸门是选择器里的 `[data-content-phase="hero"]`。这里再补两条：
+     · 工作页（插件 / 自动化 / 详情）：那里没有 ConversationRoot，理论上进不来，
+       但万一将来某个版本把 hero 留在隐藏层里，也一定不会露出横幅；
+     · 老内核不支持 aspect-ratio（Chromium < 88）时，元素高度会退化成 0，
+       背景不绘制 —— 不会出白块，只是没有横幅，属于可接受的降级。 */
+html[data-dsh-skin="mari"][data-dsh-page="work"]
+  [data-conversation-content][data-content-phase="hero"]::before {
+  display: none;
+}
+
+/* ── 20.4 减少动效 ──────────────────────────────────────────────────────────
+   ① 不做淡入、不做位移，直接终态（client.js 在减少动效时压根不会 armed，
+      这里再兜一层，防属性残留把横幅永久留在 0 透明度）；
+   ② `!important` 的方向是「撤销隐藏」，与 20.2 相反，不会互相压制。 */
+@media (prefers-reduced-motion: reduce) {
+  html[data-dsh-skin="mari"]
+    [data-conversation-content][data-content-phase="hero"]::before {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── 20.5 素材缺失降级 ──────────────────────────────────────────────────────
+   5.png 若因打包丢失返回 404：背景不绘制，但上方的 aspect-ratio 仍然占位，
+   新会话页顶部会空出一条 82% 宽的横带。发布前请确认
+   package.json 的 files 白名单包含 assets/**（5.png 已在 §20 正式启用）。 */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §21  MARI'S MESSAGE：只在新会话空白态出现的思考记录卡
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 需求 → 实现的映射 ───────────────────────────────────────────────────────
+     ① 「只在空白初始态显示」 → 双重闸门：
+          CSS  `[data-content-phase="hero"]`（React 算出来的相，权威）
+          +     `html[data-dsh-blank]`（client.js 算出来的空白标记，见 §21.4）
+        两者都成立才画。任一不成立 → 一个像素都不出现。
+     ② 「发送消息后自动隐藏」 → 提交那一刻 phase 变 settling，规则立刻失效；
+        即使 React 还没来得及改，client.js 的 90ms 防抖也会在下一帧摘掉
+        data-dsh-blank —— 两条腿走路，不会有一条腿先断的情况。
+     ③ 「不遮挡输入框与对话区域」 → 位置不在视口角落，而是**挂在输入坞的
+        `[data-composer-seat]` 内部右上角**（`top:0`）。seat 的高度就是
+        「标题 + 工作区行 + 输入卡」这一整块，卡片高度被钉在 56px，
+        比「标题 50px + 间距 8px」还矮一截 —— 从几何上就碰不到输入卡，
+        更碰不到下面的对话正文（那里在 scrollBody 里，跟它不同层）。
+        `pointer-events: none` 再加一道：即使视觉上叠到任何东西，
+        点击也照样穿透到官方控件。
+
+   ── 为什么不再挂 html::after（上一版的病灶）────────────────────────────────
+     上一版是视口右下角的常驻仪表板，实测 1440 宽时左缘 1190、输入卡右缘 1212
+     → 直接压住 22px，且任何页面都画。
+   本轮宿主换成输入坞：右缘对齐输入卡右缘（用官方变量算，不猜像素），
+   纵向在输入卡上方，页面一换相就整块消失。
+
+   ── 为什么用两个伪元素 ─────────────────────────────────────────────────────
+     一个 `::before` / `::after` 只能承载一段文字、一套字体设置。
+     卡片要「小字标签 + 一行正文」两种排版，所以：
+       ::before = 卡片本体（底 / 边 / 切角）+ 标签文字
+       ::after  = 正文，绝对定位叠在卡片里、标签下方
+     两者都 `pointer-events:none`，不进无障碍树、不吃选中。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 21.1 需要 relative 的祖先 ──────────────────────────────────────────────
+   `_composerSeat` 官方是 `display:flex; flex-direction:column`，没有定位。
+   只在新会话空白态给它 relative —— 对话页（active）一个字节都不改，
+   免得给官方那些绝对定位的浮层（划词菜单 / 引用条）换掉包含块。
+
+   ★ 2026-10·第八轮：卡片往右挪之后，「锚点算式」由 21.2 与 21.3 共用，
+     所以把它提成一个变量挂在这里 —— 两个伪元素各自没有共享作用域，
+     写两遍迟早会漂。改间距只改这一个数。 */
+html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"])
+  [data-conversation-content][data-content-phase="hero"] [data-composer-seat] {
+  position: relative;
+
+  /* 卡片右缘相对「输入卡右缘」再往外推多少：
+     48px —— 卡片整体右移的量，标题到卡片的净空同步 +48px
+     （实测：1440/1920 下净空 150px，未挪之前是 100px；1280 下触底 90px）。
+     这个值只影响右缘落在哪，不改变卡片自身尺寸与外观。 */
+  --u8-chip-shift: 48px;
+}
+
+/* ── 21.2 卡片本体 + 标签 ───────────────────────────────────────────────────
+   右缘对齐输入卡右缘：
+     (主区域宽 − 输入卡最大宽) / 2  = 输入卡两侧的净空
+   变量由官方 `.body` 提供（chat宽 + 32），带 952px 兜底，
+   万一将来官方改名，也只是退化成「贴着主区域右缘」，不会错位到左边。
+
+   ★ 高度为什么是 34px：官方 HeroShell 那行标题的实际行高就是 34px
+     （鱼形 logo 34px / 行高 32px 取大者）。卡片取同一个高度，
+     上沿与标题上沿齐平、下沿与标题下沿齐平 —— 读起来是「标题行的右端
+     挂了一块 HUD 铭牌」，而不是一块浮在半空的补丁；也正好避开它下面
+     那行 `_heroWorkspaceRow`（模型选择器在那一行的最右端，卡片再高 8px
+     就会压住它）。 */
+html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"])
+  [data-conversation-content][data-content-phase="hero"]
+  [data-composer-seat]::before {
+  content: "MARI'S MESSAGE";
+
+  position: absolute;
+  top: 0;
+  /* 右缘 = 输入卡右缘再往外推 `--u8-chip-shift`（21.1 里定义的 48px）。
+     ★ 为什么是「卡右缘 + 位移」而不是「贴主区域右缘」：
+       输入卡水平居中，右缘 = 座位中心 + 476px，与窗口宽无关；标题也是居中
+       排布的，右缘同样是「中心 + 半个标题组宽」。两者锚在同一根中轴上，
+       所以**标题到卡片的净空在任何窗口宽度、任何侧栏开合状态下都恒定**。
+       若改成 `right: 13px`，宽屏上卡片会一路飘到主区域最右边，
+       和标题彻底失去关系（窗口一拉宽就贴到屏幕边缘）。
+     ★ 净空推导（座位宽 S，输入卡 952，标题组半宽 h，标题右缘 = S/2 + h）：
+         卡右缘   = S/2 + 476 + shift
+         卡左缘   = S − right − 304 = S/2 + 172 + shift
+         净空     = (S/2 + 172 + shift) − (S/2 + h) = (172 − h) + shift
+       → 与 S 无关，只跟标题自身宽度和 shift 有关。实测 h ≈ 71px
+         （1440/1920 下「探索未至之境 + 预览版徽标」的右缘），
+         故净空 = 101 + 48 = 149px；未加 shift 时是 101px。
+     ★ max(13px, …)：主区域比输入卡还窄时（窗口很小 / 侧栏全展开）calc 会变负，
+       卡片会被推到主区域外面、被 overflow 裁掉半张。夹一层下限，
+       最坏情况退化成「贴着主区域右缘」（1280 下净空仍有 90px），不会跑出去。 */
+  right: max(
+    13px,
+    calc(
+      (100% - var(--dsh-composer-card-max-width, 952px)) / 2 -
+        var(--u8-chip-shift, 0px)
+    )
+  );
+
+  box-sizing: border-box;
+  width: 304px;
+  height: 34px;
+  padding: 0 14px;
+
+  /* UNIT-08 的铭牌语言：左下切角 + 左侧 3px 光条 + 一圈发丝描边 */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  background:
+    linear-gradient(180deg, rgba(255, 251, 253, 0.95), rgba(255, 243, 248, 0.90));
+  box-shadow:
+    inset 3px 0 0 var(--u8-rose, #D23F70),
+    inset 0 0 0 1px rgba(198, 122, 158, 0.44),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.75);
+
+  color: var(--u8-rose-deep, #A62A56);
+  font-family: var(--ds-font-family-code), ui-monospace, "Cascadia Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 34px;              /* = height，单行垂直居中，不用 flex */
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  text-overflow: clip;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+/* ── 21.3 正文（同一行的右半段）─────────────────────────────────────────────
+   与 21.2 共用同一个锚点与盒子，只靠 padding-left 把文字推到标签右侧 ——
+   不写 top / right，避免两处数值各自漂移。
+   padding-left 取 112px：标签是 14 个等宽字符 × (9px × 0.6 + 0.16em × 9px)
+   ≈ 96px，加左内边距 14px 与 12px 间隙 —— 等宽字体下这个数是可算的，
+   换字体最坏情况是间隙变宽或变窄，不会越到标签上。 */
+html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"])
+  [data-conversation-content][data-content-phase="hero"]
+  [data-composer-seat]::after {
+  content: "「回線已接続，随时可以出发。」";
+
+  position: absolute;
+  top: 0;
+  /* 与 21.2 逐字相同的锚点：改一处必须同步改另一处，否则正文会飘出卡片。
+     ★ 两者都读 21.1 的 `--u8-chip-shift`，所以「挪卡片」只需要改那一个数。 */
+  right: max(
+    13px,
+    calc(
+      (100% - var(--dsh-composer-card-max-width, 952px)) / 2 -
+        var(--u8-chip-shift, 0px)
+    )
+  );
+
+  box-sizing: border-box;
+  width: 304px;
+  height: 34px;
+  padding: 0 14px 0 112px;
+
+  color: var(--u8-ink-2, #57414F);
+  font-size: 11.5px;
+  line-height: 34px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+
+  pointer-events: none;
+  user-select: none;
+  z-index: 3;
+}
+
+/* 深色档：卡片改深粉黑玻璃，文字提亮一档（浅底卡片在暗场里会「发光」） */
+html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"]) body[data-ds-dark-theme]
+  [data-conversation-content][data-content-phase="hero"]
+  [data-composer-seat]::before {
+  background: linear-gradient(180deg, rgba(40, 14, 26, 0.94), rgba(30, 10, 20, 0.90));
+  box-shadow:
+    inset 3px 0 0 var(--mari-neon, #FF5C93),
+    inset 0 0 0 1px rgba(255, 146, 180, 0.42),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
+  color: var(--mari-neon-soft, #FFA8C6);
+  text-shadow: none;
+}
+
+html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"]) body[data-ds-dark-theme]
+  [data-conversation-content][data-content-phase="hero"]
+  [data-composer-seat]::after {
+  color: rgba(246, 230, 239, 0.88);
+}
+
+/* ── 21.4 空白态的判定（写在 CSS 里的那份说明，实际计算在 client.js）───────
+   client.js 的 `detectBlankSession()`：
+     ① 必须有 `[data-conversation-content]`，且 `data-content-phase` 缺失或为 hero；
+     ② 必须有 `[data-composer-card]`（排除懒加载骨架 / 未知路由）；
+     ③ 不能是工作页（`[data-dsh-page="work"]`）；
+   三条都成立 → `<html data-dsh-blank>`；任一不成立 → 摘掉。
+   ★ 只写属性、不新增 DOM；属性变化本身就会让本节所有规则瞬间生效 / 失效，
+     不需要任何 class 切换逻辑。 */
+
+/* ── 21.5 窄窗兜底：不画 ────────────────────────────────────────────────────
+   卡片要 304px，标题组居中后左右各占掉约 116px，再加上 24px 呼吸 ——
+   主区域至少要有 ~940px 才摆得开（视口 ≈ 1210px，含 260px 侧栏；
+   这里取 1240px 留 30px 余量）。
+   比这更窄时就不画了：窄窗以「干净」优先，硬挤会压到「预览版」徽标。
+   ★ 阈值按**视口**写而不是容器：纯 CSS 拿不到主区域宽度，
+     只在 §21.1 给 seat 加了 relative，没有（也不值得）给 body 加
+     container-type —— 那会给整棵对话树套一层 layout containment。
+   ★ 代价：侧栏收起时（主区域更宽）也会一并隐藏。这是保守选择：
+     宁可少一个装饰，不要一个压着标题的装饰。 */
+@media (max-width: 1240px) {
+  html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"])
+    [data-conversation-content][data-content-phase="hero"]
+    [data-composer-seat]::before,
+  html[data-dsh-skin="mari"][data-dsh-blank]:not([data-dsh-page="work"])
+    [data-conversation-content][data-content-phase="hero"]
+    [data-composer-seat]::after {
+    display: none;
+  }
+}
+
+/* 减少动效：卡片是静态的，没有可关的动画；这条只为「将来若加脉动」留位，
+   现在不输出任何声明。 */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §22  折叠按钮「还原 eva 官方外观」（需求 2 的落地索引）
+   ═══════════════════════════════════════════════════════════════════════════════
+   参考实现 `dsh-plugin-eva-theme-0.51.2` 对侧栏折叠按钮**一条规则都没写** ——
+   它用的就是官方原样。所以「还原 eva」= 把我们前几轮画上去的东西全部撤掉。
+
+   官方原样（SidebarRoot.module.css 原文，哈希前缀每次构建都会变，只看后缀）：
+     ._iconButton{ width:28px; height:28px; border-radius:var(--dsw-radius-sm);
+                   color:var(--dsw-alias-label-secondary); background:0 0;
+                   border:none; padding:0; display:inline-flex; position:relative }
+     ._iconButton:hover{ background:var(--dsw-alias-interactive-bg-hover) }
+     ._collapsed ._iconButton{ width:36px; height:36px; border-radius:var(--dsw-radius-md) }
+     ._collapsed ._toggle ._panelIcon{ display:none }        ← 不 hover 时藏图标
+     ._collapsed ._toggle:hover ._panelIcon{ display:inline }← hover 才显
+     ._collapsed ._toggle:hover ._railMark{ display:none }   ← 图标在 railMark / panelIcon 间切换
+     [data-windows-titlebar] ._toggle{ position:fixed; left:12px; z-index:30;
+                                       top:calc((titlebar高 − 28px)/2); no-drag }
+
+   本轮撤掉的（都是前几轮为了「按钮消失」这个 BUG 打的补丁，现在由
+   §19.6.1 / 19.6.2 根治包含块劫持之后就多余了，留着反而是另一套外观）：
+     · 淡白玻璃底 + 玫色描边 + 双层投影        → §5.5.2 已删
+     · 强制显示 panelIcon、染成 --mari-neon、16px → §5.5.8 已删
+     · 折叠态隐藏 railMark（破坏官方图标切换）  → §5.5.6 已删
+     · 展开态的 HUD 方框（圆角 / 内描边 / 玫色）→ §19.4.7 已删
+     · 深色档单独换皮                          → 已删（跟随官方令牌）
+   保留的三条**都不是外观**，是「点得到」的保险丝（§5.5.2 / §5.5.9 / §19.6.3）：
+     visibility / opacity / pointer-events / z-index / no-drag
+     + Windows 标题条那一组 position/left/top —— 数值与官方逐字相同。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §23  【★2026-10·第六轮】插件配置面 containment：把配置项锁在父卡片里
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 症状 ─────────────────────────────────────────────────────────────────────
+   插件详情页、内置插件配置弹窗里，配置方框 / 输入框 / 开关 / 说明文字会溢出
+   卡片右缘、错位、被裁掉一截。
+
+   ── 根因（对着官方 CSS 原文核过）────────────────────────────────────────────
+   官方的宽度预算是逐层写死的：
+     .page          { padding: 0 clamp(24px,4vw,48px) 48px; overflow: auto }
+     .page > *      { width: 100%; max-width: 960px }        ← 960 是硬上限
+     .detail        { display: flex; flex-direction: column }
+     .detailSections / .detailSection / .installField / .installBody
+                    { display: flex; flex-direction: column } ← 全都没有 min-width:0
+   而配置表单是**插件自己投稿**的 —— 官方用
+   renderSlot("plugins.item", { view:"page", form }) 把它塞进
+   .detailSections[data-plugin-config]。插件作者只要写一个 display:flex 的行，
+   左边一段长说明、右边一个开关，就天然踩中 flex 的经典坑：
+       flex item 的 min-width 默认是 auto，
+       不可断行的长内容（模块名、安装路径、设置项键名、一串 URL）
+       会把 min-content 撑到 960 之外 → 整行溢出父级，
+       右侧 flex:none 的开关被一起顶到卡片外面。
+   再叠上 §19.2.3 给详情容器补的左右 18px 内边距（内容盒只剩 924px），
+   预算更紧，溢出就从「偶尔」变成「必现」。
+
+   ── 手法（三层，缺一不可）──────────────────────────────────────────────────
+   ① 容器：配置面每个容器 box-sizing:border-box + max-width:100% + min-width:0。
+      ★ min-width:0 是让 flex/grid 子项**允许被压缩**的唯一开关；
+        默认的 auto 意思是「我不比我的内容更窄」，所以父级再窄也压不下去，
+        结果就是溢出而不是换行 —— 这正是「错位」的来源。
+   ② 后代：容器内所有后代统一 min-width:0 / max-width:100%。
+      看着粗暴，但它只改「能不能缩」，不改任何实际尺寸 ——
+      没有内容需要缩时，渲染结果与改动前逐像素相同。
+   ③ 断词：容器上 overflow-wrap:break-word（可继承）；
+      代码类内容单独提到 anywhere。两者的区别必须记住：
+        break-word  **不影响** min-content（只影响最终排版）；
+        anywhere    **会影响** min-content（让「最宽的单词」这个概念失效）。
+      所以长路径 / 长键名必须用 anywhere，否则 ② 的 min-width:0 也压不下去。
+      普通说明文字用 break-word 就够，不会把英文单词拆得很难看。
+
+   ── 为什么不加 overflow:hidden / clip ───────────────────────────────────────
+   需求里同时要求「不被截断」。裁剪只是把溢出换个形式藏起来，
+   而且会连下拉层、focus 描边、悬浮说明一起剪掉。所以这里一个 overflow 都不加，
+   全部靠「允许收缩 + 允许断行」把内容真正排进卡片内。
+
+   ── 为什么不改 §19.2.3 的 18px 内边距 ──────────────────────────────────────
+   那 18px 是为了让正文与 19.2.3b 的左侧玫色光条之间留出呼吸，属于主题的一部分；
+   需求也明确「只修溢出、不改主题」。所以保留内边距，改由 containment 把
+   剩下的 924px 用干净 —— 预算少了 36px 也不会再溢出。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 23.1 配置面容器：先发「可以收」的许可证 ─────────────────────────────────
+   名单里的后缀全部来自官方 PluginManagerPage / 安装向导的 CSS 模块。
+   类名是「哈希_后缀」的形式（哈希每次构建都变），所以只用后缀包含匹配 ——
+   这也是本文件从 §19 起一贯的做法。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-config],
+    [data-plugin-config] > *,
+    [class*="detailSection"],
+    [class*="detailsBody"],
+    [class*="optionsRow"],
+    [class*="installDialog"],
+    [class*="installContent"],
+    [class*="installBody"],
+    [class*="installFooter"],
+    [class*="installField"],
+    [class*="installSafety"],
+    [class*="installedPanel"],
+    [class*="wizard"],
+    [class*="wizardScroll"],
+    [class*="wizardActions"],
+    [class*="registry"],
+    [class*="guide"],
+    [class*="guideList"],
+    [class*="guideMain"],
+    [class*="rowMain"],
+    [class*="approval"],
+    [class*="subject"],
+    [class*="facts"],
+    [class*="result"]
+  ) {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+/* 配置弹窗可能有自己的 dialog 外壳（配置表单被放进模态里时）。
+   有 [data-plugin-config] 的对话框，同样不许它的内容把壳撑破。 */
+html[data-dsh-skin="mari"] :is([role="dialog"], dialog):has([data-plugin-config]) {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ── 23.2 后代全量收缩 ──────────────────────────────────────────────────────
+   只改「能不能缩」，不改尺寸；不需要缩的时候渲染结果不变。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"],
+    [class*="wizard"],
+    [class*="installedPanel"]
+  )
+  * {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ── 23.3 代码类长串：必须用 anywhere 才能真正压下去 ──────────────────────
+   模块名 / 安装路径 / 键名 / 说明里的行内代码 —— 这些是没有空格的连续串，
+   break-word 压不动它们的 min-content。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"],
+    [class*="wizard"],
+    [class*="installedPanel"],
+    [class*="registry"]
+  )
+  :is(
+    code,
+    pre,
+    samp,
+    kbd,
+    [class*="Name"],
+    [class*="Location"],
+    [class*="Hint"],
+    [class*="Desc"],
+    [class*="description"],
+    [class*="path"],
+    [class*="Path"]
+  ) {
+  overflow-wrap: anywhere;
+}
+
+/* ── 23.4 输入类：宽度不再向外借光 ──────────────────────────────────────────
+   官方 .installField input[type=text] 只声明了 height / padding / 圆角，
+   既没有 width 也没有 box-sizing。它现在是靠 flex 的 stretch 撑满的，
+   一旦插件把这一行改成「label + input 横排」，input 就会按内容盒 + 28px
+   内边距取宽，直接顶出卡片。这里统一收进 border-box。
+   checkbox / radio 必须排除：它们给 width:100% 会变成一条横线。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"],
+    [class*="wizard"],
+    [class*="installedPanel"],
+    [class*="registry"]
+  )
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+  ) {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ── 23.5 开关 / 勾选 / 分段控件：尺寸不参与压缩，位置不出卡片 ─────────────
+   它们是「读数」不是「内容」，被压缩会变形；
+   让它们 flex:0 0 auto 固定在行尾，由文字先断行，才是正确的优先级。
+   max-width:100% 是最后一道保险：万一卡片本身比开关还窄，也只会等比内缩。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"],
+    [class*="wizard"],
+    [class*="installedPanel"],
+    [class*="registry"]
+  )
+  :is(
+    [role="switch"],
+    input[type="checkbox"],
+    input[type="radio"],
+    [class*="switch"],
+    [class*="Switch"],
+    [class*="controlTrack"],
+    [class*="Thumb"]
+  ) {
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+/* ── 23.6 facts 两列行：原来 dt 是 flex:none，长标签会把 dd 顶出去 ─────────
+   .facts div 是 space-between + dt{flex:none} + dd{min-width:0}，
+   只有右边允许缩 —— 左边一长就整行溢出。这里把 dt 也放开收缩。 */
+html[data-dsh-skin="mari"]
+  :is([data-plugin-config], [class*="installContent"], [class*="installedPanel"])
+  [class*="facts"]
+  :is(dt, dd) {
+  min-width: 0;
+  flex-shrink: 1;
+  overflow-wrap: break-word;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   §24  【★2026-10·第七轮】插件详情 / 配置面：高饱和粉框 → 极浅粉白框
+   ═══════════════════════════════════════════════════════════════════════════════
+
+   ── 症状 ─────────────────────────────────────────────────────────────────────
+   插件详情页里，配置卡片、配置项输入框、开关外层都套着一圈**饱和玫粉**的细框，
+   压在半透明白玻璃上很扎眼，像是后来「贴」上去的高亮标记。
+
+   ── 粉框从哪来（三处，都对着源码核过）─────────────────────────────────────
+   ① **令牌**：官方组件自己不写颜色，一律读令牌 ——
+        input / select   border: .5px solid var(--dsw-alias-border-l4)
+        card / guide / subject / installDialog
+                         border: .5px solid var(--dsw-alias-border-l3 | l4)
+        区块分隔线        border-bottom: .5px solid var(--dsw-alias-border-l2)
+      而 §1（全局）与 §19.0（工作页）把这四个令牌改成了玫色：
+        全局    rgba(255, 92,147, .14/.22/.30/.42)   ← l4 已经 42% 饱和玫
+        工作页  rgba(196,122,156, .14/.22/.34/.46)
+      → 「每一个官方描边」都跟着变粉，这是最大的一处来源。
+   ② **通配规则**：§16.4 给 `[class*="switcher"]` 直接写了
+        border: 1px solid rgba(255,92,147,.28) + 近白底，
+      而 `switcher` 这个后缀在官方组件里指的是「子代理血缘行的下拉触发器」
+      （oXE0lW_switcherRoot / switcherTrigger / switcherTitle），
+      并不是配置里的开关卡片 —— 于是**连文字 span 外面都被套了一圈粉框**。
+   ③ **霓虹态**：§16.4 还给开关选中态写了
+        border-color: var(--mari-neon) + inset 0 0 0 1px rgba(255,92,147,.35)
+      （--mari-neon = #FF5C93，正是需求里点名不要的高饱和粉）。
+
+   ── 改法：只在「插件详情 / 配置面」这个子树里收，全局不动 ──────────────────
+     24.1 令牌重定向   —— 一处改完，①②里所有「走令牌」的描边同时变浅
+     24.2 开关/分段类  —— 只改颜色、不新增边框；border-width 保持官方原值，
+                          本来没有边框的元素不会被画出一圈新的
+     24.3 文字子元素   —— 撤掉 §16.4 落在 span / Title / Label 上的那圈框
+     24.4 详情容器     —— 自己那道 2px 玫色左光条收成 1px 浅粉白
+
+   ── 取值 ─────────────────────────────────────────────────────────────────────
+   全部落在需求给的区间 rgba(255,255,255,.15) ~ rgba(255,180,210,.25) 之内：
+   没有高饱和粉、没有红、没有粗边框（最粗 1px）。
+   浅色档下这层几乎与近白底融在一起，只在侧光角度看到一条极淡的粉白棱；
+   深色档下它自动变成薄薄一层白色高光 —— 正是深色玻璃该有的质感，
+   所以不需要再单独写一套深色值。
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 24.1 令牌重定向：官方描边的唯一来源 ────────────────────────────────────
+   ★ 写在**容器**上而不是 :root 上：CSS 变量是继承的，配置面里所有后代都会读到
+     新值；而侧栏、输入框、横幅、右下角组件、右上角按钮都不在这个子树里，
+     一行都不受影响 —— 这就是「只改这一页」的边界。
+   ★ 为什么用重定向而不是逐个元素写 border：官方的新节点会一直长出来，
+     抓令牌才能一次覆盖 input / card / guide / subject / dialog / 分隔线。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-market-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  ) {
+  --dsw-alias-border-l1: rgba(255, 255, 255, 0.15);
+  --dsw-alias-border-l2: rgba(255, 200, 220, 0.16);
+  --dsw-alias-border-l3: rgba(255, 190, 215, 0.20);
+  --dsw-alias-border-l4: rgba(255, 180, 210, 0.25);
+}
+
+/* ── 24.2 开关 / 分段控件外层：从「高亮粉框」降成「几乎看不见的浅框」───────
+   ★ 只写 border-color + background + box-shadow，不写 border / border-width：
+     ① 官方原本有 .5~1px 边框的，颜色变浅就好，粗细不动（不制造粗边框）；
+     ② 官方原本 border-style:none 的，仅改颜色不会凭空画出一圈框。
+   ★ 底色只给「容器型」的 switcher 一层极淡白（.12），保留「这是一张卡片」的
+     暗示；**不给 [role="switch"] / controlTrack 之类上底色** —— 那些元素的
+     背景色本身就是开/关状态，染白会把状态盖掉。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  )
+  [class*="switcher"] {
+  border-color: rgba(255, 180, 210, 0.25);
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+/* 真正的开关/分段控件：只降边框与内发光，不碰它的底色 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  )
+  :is([role="switch"], [class*="switch"], [class*="toggle"], [class*="controlTrack"]) {
+  border-color: rgba(255, 180, 210, 0.25);
+  box-shadow: none;
+}
+
+/* 选中 / 打开态：不再用霓虹描边和内发光，改用同一档浅框（状态仍由轨道底色表达） */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  )
+  :is(
+    [role="switch"][aria-checked="true"],
+    [class*="switch"][data-state="checked"],
+    [class*="controlTrack"][data-on="true"],
+    input[type="checkbox"]:checked
+  ) {
+  border-color: rgba(255, 180, 210, 0.25);
+  box-shadow: none;
+}
+
+/* 深色档：16.6 里那条深色 switcher 规则带了 `body[data-ds-dark-theme]`，
+   元素选择器多一个、特异性高 (0,3,2) > (0,3,1)，会盖掉上面那条。
+   这里用同样的形状再写一次，把暗底上的粉框也降到同一档浅色。
+   ★ 深色下「浅」的方向是反的：白 .15 在暗底上才会显出来，所以取值略提一点。 */
+html[data-dsh-skin="mari"] body[data-ds-dark-theme]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  )
+  [class*="switcher"] {
+  border-color: rgba(255, 190, 215, 0.22);
+  background-color: rgba(255, 255, 255, 0.10);
+  box-shadow: none;
+}
+
+/* ── 24.3 撤掉落在「文字」上的那圈框 ────────────────────────────────────────
+   §16.4 的 [class*="switcher"] 命中了 switcherTitle / switcherTrigger 里的 span，
+   给纯文字加了一圈 1px 粉框。那不是卡片，是字，必须整条撤掉 ——
+   这也是「错位 / 突兀」观感的一部分来源。 */
+html[data-dsh-skin="mari"]
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-plugin-config],
+    [class*="installDialog"],
+    [class*="installContent"]
+  )
+  [class*="switcher"]
+  :is(span, [class*="Title"], [class*="Label"], [class*="Text"]) {
+  border: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* ── 24.4 详情容器自己的 HUD 边：2px 玫色光条 → 1px 浅粉白 ─────────────────
+   19.2.3b 那道 `inset 2px 0 0 var(--u8-rose)` 是整个详情页最粗、最饱和的一条粉，
+   在配置区旁边就是「突兀」的主因。这里只把它收细、调淡，保留「左侧有一条光」
+   的仪表舱语义，不改变任何布局（仍旧是 box-shadow，不占位）。
+   ★ 选择器与 19.2.3b 逐字相同 → 特异性相等、位置在后，稳定覆盖。 */
+html[data-dsh-skin="mari"]:is([data-dsh-page="work"], :has([data-shell-leading]), :has([data-plugin-item-detail]))
+  :is(
+    [data-plugin-item-detail],
+    [data-plugin-detail],
+    [data-plugin-row-detail],
+    [data-market-detail],
+    [data-plugin-panel] div:has(> [class*="detailTop"])
+  ) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 190, 215, 0.20),
+    inset -1px 0 0 rgba(255, 255, 255, 0.15),
+    inset 1px 0 0 rgba(255, 180, 210, 0.25);
 }

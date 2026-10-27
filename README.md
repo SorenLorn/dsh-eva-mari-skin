@@ -19,6 +19,10 @@
 | 霓虹描边 / 玻璃面板 | `inset` 阴影 + `backdrop-filter`，作用于输入卡片等面板 | 中：依赖官方 `data-*` 属性 |
 | 输入框角标文字 | `[data-composer-card]::before` 纯文字，不占布局 | 中：若官方日后占用伪元素，只失去角标 |
 | 插件页毛玻璃 | 外层容器与子条目分别设 blur / 透明度 | 中：依赖 `data-plugin-scope` / `data-plugin-entry` |
+| 新会话 HUD 横幅 | `[data-conversation-content][data-content-phase="hero"]::before` 载入 `5.png`，裁掉白边后**整体等比缩到 82%** 居中；侧栏收起时用 `max-width` 按住，不随主区域变宽而放大 | 中：只依赖官方 `data-content-phase` / `data-sidebar-collapsed`，仅空白新会话可见 |
+| MARI'S MESSAGE 卡片 | `[data-composer-seat]::before` / `::after` 纯 CSS 文字，空白态才挂上 | 中：依赖 client.js 计算的 `data-dsh-blank` |
+| 插件配置面 containment | `box-sizing` + `min-width:0` + `overflow-wrap`，三级收束把配置项锁在父卡片内 | 高：只改「能不能缩」，不改任何实际尺寸 |
+| 插件配置面描边 | 在详情 / 配置子树里重定向 `--dsw-alias-border-l1..l4`，统一成 `rgba(255,255,255,.15)`~`rgba(255,180,210,.25)` 的浅粉白 | 高：改的是令牌，官方新旧节点一起跟随；范围外不受影响 |
 | hover 提亮 / 菜单底色 / 焦点环 | 语义选择器 + `filter` / `outline` | 高：`button`、`[role=menuitem]`、`:focus-visible` |
 | 分层入场动画 | 官方已有容器 + `@keyframes mari-enter` | 高：默认无动画，属性出现才播 |
 | 开机动画 | 临时 `<video>` 全屏播放，结束即移除 | 中：任何失败都直接跳过，界面不受影响 |
@@ -238,6 +242,8 @@ dsh-mari-skin/
 ├─ skin.css              # 全部皮肤样式，规则全部限定在 html[data-dsh-skin="mari"]
 ├─ assets/
 │  ├─ bg.jpg             # 背景插画（同时是开机视频的 poster）
+│  ├─ 3.png              # 工作页（插件 / 自动化）背景插画
+│  ├─ 5.png              # 新会话页顶部 HUD 横幅（§20，等比 82%）
 │  ├─ boot.webm          # 开机动画（VP9 / 1440p60，优先使用）
 │  ├─ boot.mp4           # 开机动画回退源（H.264）
 │  ├─ screenshot-1.jpg   # 插件市场截图 1
