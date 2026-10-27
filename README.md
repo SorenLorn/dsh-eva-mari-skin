@@ -10,22 +10,22 @@
 
 ## 特性
 
-| 效果 | 实现方式 | 稳定性 |
-|---|---|---|
-| 全局换色 | 覆盖官方 `--dsw-alias-*` / `--dsw-specific-*` 令牌 | 高：官方组件全部走这些变量 |
-| 背景插画 | `body` 背景图（`assets/bg.jpg`，由插件静态路由提供） | 高：官方 `body` 背景未被占用 |
-| 网格 / 扫描线 / 噪点 | `body::before` 多重背景，`z-index:-1` 不挡点击 | 高：官方未占用 `body` 伪元素 |
-| 暗角 | `body::after` 径向渐变 | 高：同上 |
-| 霓虹描边 / 玻璃面板 | `inset` 阴影 + `backdrop-filter`，作用于输入卡片等面板 | 中：依赖官方 `data-*` 属性 |
-| 输入框角标文字 | `[data-composer-card]::before` 纯文字，不占布局 | 中：若官方日后占用伪元素，只失去角标 |
-| 插件页毛玻璃 | 外层容器与子条目分别设 blur / 透明度 | 中：依赖 `data-plugin-scope` / `data-plugin-entry` |
-| 新会话 HUD 横幅 | `[data-conversation-content][data-content-phase="hero"]::before` 载入 `5.png`，裁掉白边后**整体等比缩到 82%** 居中；侧栏收起时用 `max-width` 按住，不随主区域变宽而放大 | 中：只依赖官方 `data-content-phase` / `data-sidebar-collapsed`，仅空白新会话可见 |
-| MARI'S MESSAGE 卡片 | `[data-composer-seat]::before` / `::after` 纯 CSS 文字，空白态才挂上 | 中：依赖 client.js 计算的 `data-dsh-blank` |
-| 插件配置面 containment | `box-sizing` + `min-width:0` + `overflow-wrap`，三级收束把配置项锁在父卡片内 | 高：只改「能不能缩」，不改任何实际尺寸 |
-| 插件配置面描边 | 在详情 / 配置子树里重定向 `--dsw-alias-border-l1..l4`，统一成 `rgba(255,255,255,.15)`~`rgba(255,180,210,.25)` 的浅粉白 | 高：改的是令牌，官方新旧节点一起跟随；范围外不受影响 |
-| hover 提亮 / 菜单底色 / 焦点环 | 语义选择器 + `filter` / `outline` | 高：`button`、`[role=menuitem]`、`:focus-visible` |
-| 分层入场动画 | 官方已有容器 + `@keyframes mari-enter` | 高：默认无动画，属性出现才播 |
-| 开机动画 | 临时 `<video>` 全屏播放，结束即移除 | 中：任何失败都直接跳过，界面不受影响 |
+| 效果                           | 实现方式                                                     | 稳定性                                                       |
+| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 全局换色                       | 覆盖官方 `--dsw-alias-*` / `--dsw-specific-*` 令牌           | 高：官方组件全部走这些变量                                   |
+| 背景插画                       | `body` 背景图（`assets/bg.jpg`，由插件静态路由提供）         | 高：官方 `body` 背景未被占用                                 |
+| 网格 / 扫描线 / 噪点           | `body::before` 多重背景，`z-index:-1` 不挡点击               | 高：官方未占用 `body` 伪元素                                 |
+| 暗角                           | `body::after` 径向渐变                                       | 高：同上                                                     |
+| 霓虹描边 / 玻璃面板            | `inset` 阴影 + `backdrop-filter`，作用于输入卡片等面板       | 中：依赖官方 `data-*` 属性                                   |
+| 输入框角标文字                 | `[data-composer-card]::before` 纯文字，不占布局              | 中：若官方日后占用伪元素，只失去角标                         |
+| 插件页毛玻璃                   | 外层容器与子条目分别设 blur / 透明度                         | 中：依赖 `data-plugin-scope` / `data-plugin-entry`           |
+| 新会话 HUD 横幅                | `[data-conversation-content][data-content-phase="hero"]::before` 载入 `5.png`，裁掉白边后**整体等比缩到 82%** 居中；侧栏收起时用 `max-width` 按住，不随主区域变宽而放大 | 中：只依赖官方 `data-content-phase` / `data-sidebar-collapsed`，仅空白新会话可见 |
+| MARI'S MESSAGE 卡片            | `[data-composer-seat]::before` / `::after` 纯 CSS 文字，空白态才挂上 | 中：依赖 client.js 计算的 `data-dsh-blank`                   |
+| 插件配置面 containment         | `box-sizing` + `min-width:0` + `overflow-wrap`，三级收束把配置项锁在父卡片内 | 高：只改「能不能缩」，不改任何实际尺寸                       |
+| 插件配置面描边                 | 在详情 / 配置子树里重定向 `--dsw-alias-border-l1..l4`，统一成 `rgba(255,255,255,.15)`~`rgba(255,180,210,.25)` 的浅粉白 | 高：改的是令牌，官方新旧节点一起跟随；范围外不受影响         |
+| hover 提亮 / 菜单底色 / 焦点环 | 语义选择器 + `filter` / `outline`                            | 高：`button`、`[role=menuitem]`、`:focus-visible`            |
+| 分层入场动画                   | 官方已有容器 + `@keyframes mari-enter`                       | 高：默认无动画，属性出现才播                                 |
+| 开机动画                       | 临时 `<video>` 全屏播放，结束即移除                          | 中：任何失败都直接跳过，界面不受影响                         |
 
 **浅色 / 深色双档**都已适配：浅色是粉白玻璃，深色是深粉黑装甲（`body[data-ds-dark-theme]`），并自动把背景图压暗，避免浅底浅字看不清。
 
@@ -49,7 +49,7 @@ npx @deepseek-ai/dsh web
 ### 方式二：从 GitHub 安装
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add https://github.com/stxn/dsh-mari-skin
+npx @deepseek-ai/dsh plugin --profile web add https://github.com/SorenLorn/dsh-eva-mari-skin
 ```
 
 ### 方式三：插件市场
@@ -130,13 +130,13 @@ lib/client.js                  ← Client：给 <html> 打属性，开机时临�
 
 **为什么不会污染 DSH 的 DOM**：`lib/client.js` 不创建任何常驻元素，只设置属性：
 
-| 属性 | 作用 | 缺失时的表现 |
-|---|---|---|
-| `data-dsh-skin="mari"` | 皮肤作用域。`skin.css` 每条规则都挂在这个选择器下 | 皮肤整体不生效，界面 = 官方原样 |
-| `data-dsh-skin-go="1"` | 入场动画的起跑枪 | 元素保持官方原始可见状态，只是没有入场动画 |
-| `data-dsh-skin-boot="1"` | 开机视频期间冻结入场 | 无动画，界面正常 |
-| `data-dsh-skin-caption` | 由 JS 接管 Windows 原生标题条底色：开场纯黑 → 交接期 320ms 渐变到皮肤粉（值不参与选择器，只作开关） | 标题条固定为皮肤粉，开场黑视频上会看到一个粉色方块 |
-| `data-dsh-sidebar-collapsed` | 折叠态镜像（只读同步，供 `::backdrop` 遮罩控制） | 遮罩跟随官方原样 |
+| 属性                         | 作用                                                         | 缺失时的表现                                       |
+| ---------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
+| `data-dsh-skin="mari"`       | 皮肤作用域。`skin.css` 每条规则都挂在这个选择器下            | 皮肤整体不生效，界面 = 官方原样                    |
+| `data-dsh-skin-go="1"`       | 入场动画的起跑枪                                             | 元素保持官方原始可见状态，只是没有入场动画         |
+| `data-dsh-skin-boot="1"`     | 开机视频期间冻结入场                                         | 无动画，界面正常                                   |
+| `data-dsh-skin-caption`      | 由 JS 接管 Windows 原生标题条底色：开场纯黑 → 交接期 320ms 渐变到皮肤粉（值不参与选择器，只作开关） | 标题条固定为皮肤粉，开场黑视频上会看到一个粉色方块 |
+| `data-dsh-sidebar-collapsed` | 折叠态镜像（只读同步，供 `::backdrop` 遮罩控制）             | 遮罩跟随官方原样                                   |
 
 **关于唯一的一处 `<video>`**：开机动画需要一个真实的全屏播放器，这是本插件唯一创建的元素（它的两个 `<source>` 子节点随它一起移除；另外当浏览器不支持 `adoptedStyleSheets` 时，`client.js` 会回退插入一个 `<style>` 来承载 `::backdrop` 规则，卸载时一并移除）。它满足三条约束：
 
@@ -152,17 +152,17 @@ lib/client.js                  ← Client：给 <html> 打属性，开机时临�
 
 入场不依赖任何全局信号，只看「视频层什么时候撤干净」。四档降级，越靠前越精确：
 
-| # | 触发条件 | 行为 |
-|---|---|---|
-| ① | `ended` —— 开机视频播完 | 精确对齐：视频淡出、移除后才起跑入场 |
-| ② | `error` / 全部 `<source>` 加载失败 / 4 秒元数据超时（`VIDEO_LOAD_TIMEOUT`）/ 16 秒播放超时（`VIDEO_MAX_MS`） | 走同一条退场流程，不卡住界面 |
-| ③ | 8 秒总保险丝（`FUSE_MS`） | 无论上面发生什么都必然放行 |
-| ④ | `?noboot=1` / `?noskin=1` / `prefers-reduced-motion` | 根本不创建 `<video>`，立即放行 |
+| #    | 触发条件                                                     | 行为                                 |
+| ---- | ------------------------------------------------------------ | ------------------------------------ |
+| ①    | `ended` —— 开机视频播完                                      | 精确对齐：视频淡出、移除后才起跑入场 |
+| ②    | `error` / 全部 `<source>` 加载失败 / 4 秒元数据超时（`VIDEO_LOAD_TIMEOUT`）/ 16 秒播放超时（`VIDEO_MAX_MS`） | 走同一条退场流程，不卡住界面         |
+| ③    | 8 秒总保险丝（`FUSE_MS`）                                    | 无论上面发生什么都必然放行           |
+| ④    | `?noboot=1` / `?noskin=1` / `prefers-reduced-motion`         | 根本不创建 `<video>`，立即放行       |
 
 时序（分层错开，实测值）：
 
 ```
-shell-leading +0ms → 侧栏 +120ms → 主区 +240ms → 输入 +360ms → 底部 +480ms → 右栏 +600ms
+标题栏 +0ms → 顶栏 +80ms → 侧栏 +160ms → 主区 +240ms → 输入 +320ms → 右栏 +400ms
 ```
 
 关键是写法反过来：**默认无动画，属性出现才播**。若写成"默认 `opacity:0`、等属性恢复"，一旦触发逻辑出问题就是全屏空白。
@@ -219,13 +219,13 @@ document.querySelectorAll('.dsh-mari-boot-video').length          // 0
 
 ## 性能
 
-| 项 | 说明 |
-|---|---|
-| `backdrop-filter: blur(22px)` | 侧栏与输入卡片两处，低端机若掉帧可把 `--mari-glass-blur` 设为 `none` |
-| `background-attachment: scroll` | 跟随 body 滚动，避免 `fixed` 在滚动容器里被降级重绘 |
+| 项                              | 说明                                                         |
+| ------------------------------- | ------------------------------------------------------------ |
+| `backdrop-filter: blur(22px)`   | 侧栏与输入卡片两处，低端机若掉帧可把 `--mari-glass-blur` 设为 `none` |
+| `background-attachment: scroll` | 跟随 body 滚动，避免 `fixed` 在滚动容器里被降级重绘          |
 | `animation: mari-scan-drift 9s` | 只动 `background-position`，GPU 友好；`prefers-reduced-motion` 下已关闭 |
-| 噪点 | 内联 SVG data URI，160×160 平铺，无额外请求 |
-| `clip-path` | 只在少量面板上使用，数量可控 |
+| 噪点                            | 内联 SVG data URI，160×160 平铺，无额外请求                  |
+| `clip-path`                     | 只在少量面板上使用，数量可控                                 |
 
 ---
 
